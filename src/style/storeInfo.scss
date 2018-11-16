@@ -1,0 +1,60 @@
+@import "common";
+@import "public";
+.basic{
+  margin-top: 1.62rem;
+  background-color: #eee;
+}
+/*  下拉小箭头  */
+.input_box .icon_arrow{
+  width: .2rem;
+  height: .3rem;
+  display: inline-block;
+  position: absolute;
+  background: url("../../assets/images/icon_arrow_right.png") no-repeat center;
+  background-size: cover;
+  right: .5rem;
+  top:50%;
+  margin-top: -.1rem;
+}
+.input_box .icon_input{
+  right: 1rem;
+}
+/*  必填提示  */
+.must_title{
+  font-size: .36rem;
+  color: #989898;
+  padding: .1rem .45rem 2rem;
+}
+.must{
+  margin-right: .2rem;
+  vertical-align: -webkit-baseline-middle;
+}
+/*  隐藏的信息盒子  */
+.input_content{
+  margin-bottom: .2rem;
+}
+/*  图片上传*/
+.input_img{
+  height: 1.88rem;
+}
+.input_img label{
+  position: absolute;
+}
+.input_img img{
+  position: absolute;
+  left: 3.55rem;
+  width: 1.88rem;
+  height: 1.88rem;
+}
+.input_img p{
+  float: right;
+  width: 3.5rem;
+  font-size: .32rem;
+  color: #cdcdd1;
+}
+/*   占位  */
+.bar{
+  height: .26rem;
+  background-color: #eee;
+  width: 100%;
+}
