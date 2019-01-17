@@ -7,7 +7,8 @@
       <div class="items">
         <div class="info">
           <img class="logo" src="../assets/images/icon_name.png"/>
-          <span class="detail">姓名：{{userInfo.truename}}</span>
+          <span class="detail">{{ num | needArrayFilter(filtersArg) }}姓名：{{userInfo.truename}}</span>
+          <span class="detail">{{ num | add(4) | multiply }}姓名：{{userInfo.truename}}</span>
         </div>
         <div class="info">
           <img class="logo" src="../assets/images/icon_id_num.png"/>
@@ -27,6 +28,8 @@
     export default {
       data(){
         return {
+          num: 0,
+          filtersArg: [{filter: 'add', arg: [1]}, {filter: 'multiply', arg: null}],
           userInfo:{}
         }
       },

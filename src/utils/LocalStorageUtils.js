@@ -32,6 +32,10 @@ export default class LocalStorageUtils {
     if (!name) return;
     window.localStorage.removeItem(name);
   }
+
+  clear(){
+    window.localStorage.clear();
+  }
 }
 
 
