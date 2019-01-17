@@ -1,0 +1,11 @@
+export const SAVE_ADDRESS = 'SAVE_ADDRESS'; //保存地址
+export const CLEAR_ADDRESS = 'CLEAR_ADDRESS'; //清空地址
+export const SET_ROUTER_REFRESH = 'SET_ROUTER_REFRESH'; //设置路由地址
+export const SAVE_USER_INFO = 'SAVE_USER_INFO'; // 保存用户信息
+export const INIT_USER_INFO = 'INIT_USER_INFO'; // 初始化用户信息
+export const CLEAR_USER_INFO = 'CLEAR_USER_INFO'; //清空用户信息
+export const SAVE_SPEC_OVERVIEW = 'SAVE_SPEC_OVERVIEW'; //商品添加页面，规格展示
+export const SAVE_ATTR_INFO = 'SAVE_ATTR_INFO'; //保存属性信息
+export const CLEAR_GOODS_INFO = 'CLEAR_GOODS_INFO'; //添加商品页面删除保存的
+export const SAVE_DEL_SPEC = 'SAVE_DEL_SPEC'; //保存删除掉的规格
+export const CLEAR_DEL_SPEC = 'CLEAR_DEL_SPEC'; //清空 需要删除的规格
