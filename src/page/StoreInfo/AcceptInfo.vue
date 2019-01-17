@@ -1,5 +1,6 @@
 <template>
   <div class="basic">
+    <div class="page_bg"></div>
     <top-header title-txt="受理信息"></top-header>
     <form class="content" onsubmit="return false">
       <div class="input_content">
@@ -20,7 +21,7 @@
         </ul>
       </div>
       <p class="must_title"></p>
-      <span @click="preserve" class="preserve_btn">保存</span>
+      <span @click="preserve" class="preserve_btn" >保存</span>
     </form>
     <van-popup v-model.trim="isShowDepartment"  position="bottom">
       <van-picker
@@ -35,13 +36,10 @@
 </template>
 
 <script>
-
   import TopHeader from '../../components/TopHeader'
   import Toast from '../../widget/Toast';
   import RadioButton from '../../components/common/RadioButton.vue'
   import * as API from '../../service/API'
-  import Loading from '../../widget/loading/loading'
-
 
   export default {
     data(){
@@ -70,8 +68,6 @@
       },
       getAcceptPerson(){
         // 如果接口数据中有值，这儿不做请求
-        let loading = new Loading();
-        loading.show();
         if(this.columns&&this.columns.length>0){
           return;
         }
@@ -94,38 +90,26 @@
               }
             }
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         })
       },
       preserve: function () {
-        let loading = new Loading();
-        loading.show();
         let formData = {
           accept_department:this.acceptInfo.accept_department,
           accept_officer:this.acceptInfo.accept_officer,
           sale_manager:this.acceptInfo.sale_manager,
         }
         this.$post(API.PARTNER_ACCEPT_INFO,formData).then((response)=>{
-            if(response.code == 500){
+            if(response.code != 200){
                 new Toast(response.msg).show();
                 return;
             }else if(response.code == 200){
                 this.data = response.data
                 new Toast(response.msg).show();
             }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         })
       }
     },
     mounted() {
-      var screenHeigt = window.screen.availHeight;
-      var topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('basic')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('basic')[0].style.backgroundColor = '#eee';
       this.getAcceptPerson();
     },
     components: {TopHeader,RadioButton}
@@ -136,4 +120,28 @@
   @import "../../style/common.scss";
   @import "../../style/public.scss";
   @import "../../style/storeInfo.scss";
+
+  /*提交按钮*/
+  .btn_fixed{
+    position: fixed;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
+  }
+
+  .btn_margin{
+    margin-top: 2.56rem;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
+  }
 </style>

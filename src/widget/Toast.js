@@ -9,9 +9,10 @@ export default class Toast {
 
   initView(){
     this.toastView = document.createElement('div');
+    if(this.msg == '') return;
     this.toastView.innerHTML = this.msg;
-    this.toastView.style.cssText = 'width: 60%;min-width: 150px;opacity: 0.7;height: 60px;color: rgb(255, 255, 255);' +
-      'line-height: 60px;text-align: center;border-radius: 10px;position: fixed;top: 40%;left: 20%;' +
+    this.toastView.style.cssText = 'width: 60%;min-width: 150px;opacity: 0.7;color: rgb(255, 255, 255);' +
+      'padding: 20px 3%;text-align: center;border-radius: 10px;position: fixed;top: 40%;left: 17%;' +
       'z-index: 999999;background: rgb(0, 0, 0);font-size: 16px;';
   }
 

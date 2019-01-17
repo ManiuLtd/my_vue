@@ -1,25 +1,19 @@
 <template>
   <div class="basic">
-    <top-header title-txt="联系人信息"></top-header>
+    <div class="page_bg"></div>
+    <top-header title-txt="添加联系人"></top-header>
     <form class="content" onsubmit="return false">
       <div class="input_content">
         <ul class="input_box"  v-for="(item,index) in contactData" :key="index">
-            <li class="title_bar">
-              <p>联系人(<span v-text="index+1"></span>)</p>
-              <p @click="delContact(index)">删除</p>
-            </li>
             <li class="input_div" v-for="(val,key) in item"  v-if="val.dataKey != 'id'" :key="key">
               <label><span class="must">*</span><span v-text="val.label"></span></label>
               <input type="text" :placeholder="val.placeholder" v-model.trim="val.value" >
             </li>
           </ul>
         <p class="bar"></p>
-        <p class="input_div add_active" @click="addContact">
-          <label><img src="../../assets/images/icon_add_active.png" alt="">添加联系人</label>
-        </p>
       </div>
       <p class="must_title"><span class="must">*</span>为必填项</p>
-      <span @click="preserve" class="preserve_btn">保存</span>
+      <span @click="preserve" :class="bottom_btn_style">确认添加</span>
     </form>
   </div>
 </template>
@@ -27,11 +21,11 @@
 <script>
   import TopHeader from '../../components/TopHeader'
   import * as API from '../../service/API';
+  import * as constant from '../../utils/constant';
   import Toast from '../../widget/Toast';
   import RadioButton from '../../components/common/RadioButton.vue'
   import axios from 'axios';
   import { Dialog } from 'vant'
-  import Loading from '../../widget/loading/loading'
   import SuccessLoading from '../../widget/sucess_loading/SuccessLoading'
   let contactInfo =[
     {label:'联系人id',placeholder:'输入联系人id',prop:null,dataKey:'id',value:''},
@@ -46,25 +40,33 @@
     data(){
       return{
         contList:[],
-        contactData:[]
+        contactData:[],
+        clientHeight:document.documentElement.clientHeight,
+        bottom_btn_style:'btn_fixed'
       }
     },
     mounted() {
-      var screenHeigt = window.screen.availHeight;
-      var topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('basic')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('basic')[0].style.backgroundColor = '#eee';
-      //this.getContactList();
+      this.resizeWindow();
       this.addContact();
     },
+    destroyed(){
+      window.onresize = null;
+    },
     methods:{
+      resizeWindow(){
+        window.onresize = ()=>{
+          if(this.clientHeight>document.documentElement.clientHeight) {
+            this.bottom_btn_style = "btn_margin";
+          }else{
+            this.bottom_btn_style = "btn_fixed";
+          }
+        }
+      },
       addContact(){
         var tempContactInfo = JSON.parse(JSON.stringify(contactInfo)); //防止数组内对象引用传递
         this.contactData.push(tempContactInfo);
       },
       getContactList(){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.PARTNER_LINK_MAN).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
@@ -81,13 +83,9 @@
             }
 
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
-        });
+        })
       },
       preserve: function () {
-        let loading = new Loading();
         let data = {};
         data.contact_id = [];
         data.contact_name = [];
@@ -108,11 +106,14 @@
                 return false;
               }
             }else if(this.contactData[i][key]['dataKey'] == 'phone'){
-              if(this.contactData[i][key]['value']!=''){
-                data.contact_phone.push(this.contactData[i][key]['value']);
-              }else{
+              if(this.contactData[i][key]['value']==''){
                 new Toast("请输入联系人手机号！").show();
                 return false;
+              }else if(!constant.REGULAR_PHONE.test(this.contactData[i][key]['value'])){
+                new Toast("联系人手机号错误！").show();
+                return false;
+              }else{
+                data.contact_phone.push(this.contactData[i][key]['value']);
               }
             }else if(this.contactData[i][key]['dataKey'] == 'identNo'){
               if(this.contactData[i][key]['value']!=''){
@@ -138,7 +139,6 @@
             }
           }
         }
-        loading.show();
         this.$post(API.ADD_PARTNER_LINK_MAN,data).then((response)=>{
           console.log(response);
           if(response.code != 200){
@@ -147,21 +147,8 @@
           }
           new SuccessLoading(response.msg).show();
           this.$router.replace('/contactList');
-          loading.close();
-        }).then((error)=>{
-          loading.close();
-        });
+        })
       },
-      delContact(index){
-        Dialog.confirm({
-          message: '确定删除该联系人吗？'
-        }).then(() => {
-          this.contactData.splice(index,1);
-          new SuccessLoading('删除成功！').show();
-        }).catch(() => {
-          // on cancel
-        });
-      }
     },
     components: {TopHeader,RadioButton}
   }
@@ -202,5 +189,29 @@
   .add_active label {
     color: #4cc3ad;
     vertical-align: bottom;
+  }
+
+  /*提交按钮*/
+  .btn_fixed{
+    position: fixed;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
+  }
+
+  .btn_margin{
+    margin-top: -1.25rem;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
   }
 </style>

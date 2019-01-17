@@ -1,29 +1,33 @@
 <template>
   <div class="shop_create_content">
-    <top-header title-txt="修改满减活动信息"></top-header>
+    <div class="page_bg"></div>
+    <top-header title-txt="编辑活动"></top-header>
     <form class="content" onsubmit="return false">
       <div class="input_content">
         <ul class="input_box">
           <div v-for="(coupon,key) in formData">
-            <li class="title_bar">
-              <p>活动</p>
-              <p @click="cutOff(coupon.pcId)">删除</p>
-            </li>
             <li class="input_div">
               <label><span class="must">*</span>开始时间</label>
-              <input type="text" name="start_time[]" placeholder="选择开始时间" @click="showTimePanel(key,1)" v-model.trim="coupon.pcStartTime">
+              <input readonly="readonly" type="text" name="start_time[]" placeholder="选择开始时间" @click="showTimePanel(key,1)" v-model.trim="coupon.pcStartTime">
             </li>
             <li class="input_div">
               <label><span class="must">*</span>结束时间</label>
-              <input type="text" name="end_time[]" placeholder="选择结束时间" @click="showTimePanel(key,2)" v-model.trim="coupon.pcEndTime">
+              <input readonly="readonly" type="text" name="end_time[]" placeholder="选择结束时间" @click="showTimePanel(key,2)" v-model.trim="coupon.pcEndTime">
             </li>
             <li class="input_div">
-              <label><span class="must">*</span>订单金额(元)</label>
-              <input type="text" name="buy_up[]" placeholder="输入订单金额" v-model.trim="coupon.pcBuyUp" style="width: 53%;">
+              <label><span class="must">*</span>购满金额(元)</label>
+              <input type="number" name="buy_up[]" placeholder="输入购满金额" v-model.trim="coupon.pcBuyUp" style="width: 53%;">
             </li>
             <li class="input_div">
-              <label><span class="must">*</span>优惠金额(元)</label>
-              <input type="text" name="buy_up_subtraction[]" placeholder="输入优惠金额" v-model.trim="coupon.pcBuyUpSubtraction"  style="width: 53%;">
+              <label><span class="must">*</span>满减优惠金额(元)</label>
+              <input type="number" name="buy_up_subtraction[]" placeholder="输入优惠金额" v-model.trim="coupon.pcBuyUpSubtraction"  style="width: 53%;">
+            </li>
+            <li class="input_div">
+              <label><span class="must">*</span>状态</label>
+              <p class="active">
+                <radio-button radio_name="active" radio_val="1" @radioChange="getActivityState" :is-checked="coupon.isAble == 1" radio_title="启用" style="margin-right: 1rem;"></radio-button>
+                <radio-button radio_name="active" radio_val="2" @radioChange="getActivityState" :is-checked="coupon.isAble == 2" radio_title="停用"></radio-button>
+              </p>
             </li>
             <!--选择时间-->
             <van-popup v-model.trim="isShowTime" position="bottom">
@@ -34,18 +38,18 @@
         </ul>
       </div>
       <p class="must_title"><span class="must">*</span>为必填项</p>
-      <span @click="preserve" class="preserve_btn">保存</span>
+      <span @click="preserve" :class="bottom_btn_style">保存</span>
 
     </form>
   </div>
 </template>
 <script>
-  import TopHeader from '../components/TopHeader'
-  import * as API from '../service/API'
+  import TopHeader from '../components/TopHeader';
+  import RadioButton from '../components/common/RadioButton.vue';
+  import * as API from '../service/API';
   import axios from 'axios';
   import moment from 'moment';
   import { Dialog } from 'vant'
-  import Loading from '../widget/loading/loading'
   import DateUtils from '../utils/DateUtils';
   import Toast from '../widget/Toast';
   import SuccessLoading from '../widget/sucess_loading/SuccessLoading'
@@ -59,30 +63,48 @@
         isShowTime: false, // 结束时间
         currentIndex: 0, // 结束时间
         currentType: 1, // 1=开始时间 2=结束时间
-        formData:[]
+        activityState: '',  //状态：1.启用 2.停用
+        formData:[],
+        clientHeight:document.documentElement.clientHeight,
+        bottom_btn_style:'btn_fixed'
       }
     },
+    mounted() {
+      this.resizeWindow();
+      this.getActiveData();
+      this.getContactList();
+    },
+    destroyed(){
+      window.onresize = null;
+    },
     methods: {
+      resizeWindow(){
+        window.onresize = ()=>{
+          if(this.clientHeight>document.documentElement.clientHeight) {
+            this.bottom_btn_style = "btn_margin";
+          }else{
+            this.bottom_btn_style = "btn_fixed";
+          }
+        }
+      },
       //  显示当前的活动信息
       getActiveData(){
         this.formData.push(JSON.parse(sessionStorage.getItem('SHOP_ACTIVE_INFO')));
-        console.log(this.formData);
+        this.activityState = this.formData[0].isAble;
       },
       // 获取所有的活动信息
       getContactList(){
-        let loading = new Loading();
-        loading.show();
-        this.$get(API.SHOP_COUPON_INFO).then((response)=>{
+        this.$get(API.EDIT_SHOP_COUPON_INFO).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
             return;
           }else if(response.code == 200){
             this.data = response.data.coupons;
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
-        });
+        })
+      },
+      getActivityState(val){   //  营业状态
+        this.activityState = val;
       },
       showTimePanel(index,type){
         this.isShowTime = true;
@@ -99,8 +121,6 @@
         }else{
           endTime = val;
         }
-        console.log("start"+startTime);
-        console.log("end"+endTime);
         if(endTime && startTime){
           if(moment(startTime).isBefore(endTime)){
             if(this.currentType == 1){
@@ -119,69 +139,69 @@
           }
         }
       },
-      cutOff(id){
-        var that = this;
-        Dialog.confirm({
-          title: '确定删除该活动吗？'
-        }).then(() => {
-           for(let i in that.data){
-             if(that.data[i].pcId == id){
-               that.data.splice(i,1);
-               this.preserve();
-               new SuccessLoading("删除成功！").show();
-               break;
-             }
-           }
-        }).catch(() => {
-          // on cancel
-        });
-      },
       preserve(){
         let data = {};
-        data.ids = [];
-        data.start_time = [];
-        data.end_time = [];
-        data.buy_up = [];
-        data.buy_up_subtraction = [];
+        let index = 0;
+        data.ids = '';
+        data.start_time = '';
+        data.end_time = '';
+        data.buy_up = 0;
+        data.buy_up_subtraction = 0;
+        data.is_able = this.activityState;
 
-        for (var index in this.formData){
-          for (var key in this.formData[index]){
-            if(key == 'pcId'){
-              data.ids.push(this.formData[index][key])
-            }else if(key == 'pcStartTime'){
-              data.start_time.push(this.formData[index][key])
-            }else if(key == 'pcEndTime'){
-              data.end_time.push(this.formData[index][key])
-            }else if(key == 'pcBuyUp'){
-              data.buy_up.push(this.formData[index][key])
-            }else if(key == 'pcBuyUpSubtraction'){
-              data.buy_up_subtraction.push(this.formData[index][key])
+        for (var key in this.formData[index]){
+          if(key == 'pcId'){
+            data.ids = this.formData[index][key];
+          }else if(key == 'pcStartTime'){
+            if(!this.formData[index][key]){
+              new Toast("请选择开始时间！").show();
+              return;
+            }else {
+              data.start_time = this.formData[index][key];
+            }
+          }else if(key == 'pcEndTime'){
+            if(!this.formData[index][key]){
+              new Toast("请选择结束时间！").show();
+              return;
+            }else {
+              data.end_time = this.formData[index][key];
+            }
+          }else if(key == 'pcBuyUp'){
+            if(this.formData[index][key] <= 0){
+              new Toast("购满金额须大于0！").show();
+              return;
+            }else if(this.formData[index][key] == ''){
+              new Toast("请输入购满金额！").show();
+              return;
+            }else {
+              data.buy_up = this.formData[index][key];
+            }
+          }else if(key == 'pcBuyUpSubtraction'){
+            if(this.formData[index][key] <= 0){
+              new Toast("优惠金额须大于0！").show();
+              return;
+            }else if(this.formData[index][key] == ''){
+              new Toast("请输入优惠金额！").show();
+              return;
+            }else {
+              data.buy_up_subtraction = this.formData[index][key];
             }
           }
         }
-        this.$post(API.SHOP_COUPON_INFO,data).then((response)=>{
+
+        this.$post(API.EDIT_SHOP_COUPON_INFO,data).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
             return;
           }else if(response.code == 200){
             this.data = response.data;
-            console.log(this.data);
             new SuccessLoading(response.msg).show();
+            this.$router.go(-1);
           }
-        }).then((error)=>{
-          //loading.close();
-        });
+        })
       }
     },
-    mounted() {
-      var screenHeigt = window.screen.availHeight;
-      var topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('shop_create_content')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('shop_create_content')[0].style.backgroundColor = '#eee';
-      this.getActiveData();
-      this.getContactList();
-    },
-    components: {TopHeader}
+    components: {TopHeader,RadioButton}
   };
 </script>
 <style lang="scss" scoped>
@@ -215,5 +235,29 @@
   .add_active label {
     color: #4cc3ad;
     vertical-align: bottom;
+  }
+
+  /*提交按钮*/
+  .btn_fixed{
+    position: fixed;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
+  }
+
+  .btn_margin{
+    margin-top: 2.56rem;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
   }
 </style>

@@ -1,4 +1,4 @@
-.box{
+.agreement_box{
   margin-top: 1.61rem;
   display: flex;
   flex-direction: column;
@@ -13,14 +13,14 @@
 }
 .licence{
   width: 8.8rem;
-  margin: .45rem auto;
+  margin: .45rem auto .75rem;
   background-color: white;
 }
 /*  大标题 */
 .head_title{font-size:.41rem;font-weight: 600;margin-bottom: .35rem;text-align: center}
-.box .licence p{text-indent: 2em;font-size: .36rem;line-height: .55rem}
+.agreement_box .licence p{text-indent: 2em;font-size: .36rem;line-height: .55rem}
 /*  二级小标题 */
 .panel-title{margin: .15rem 0;font-size: .4rem;font-weight: 600;}
 .title_two{font-weight: 600;padding: .2rem 0;}
 .second_level{text-indent: 3em;}
-.box .text-right{text-align: right;margin-top: .35rem}
+.agreement_box .text-right{text-align: right;margin-top: .35rem}

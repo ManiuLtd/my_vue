@@ -22,11 +22,15 @@ import 'vant/lib/vant-css/index.css';
 import store from './store'
 Vue.use(Vant);
 
+// 自定义全局过滤--------------------------
+import Filters from '@/global/filters.js'
+// 自定义全局过滤--------------------------
 
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
   router,
+  filters: Filters,
   components: { App },
   template: '<App/>',
   store

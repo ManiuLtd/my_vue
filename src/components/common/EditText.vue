@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <input class="edit" v-bind:type="inputType" v-bind:placeholder="inputHint" v-model.trim="inputContent"/>
+    <input class="edit" v-bind:type="inputType" v-bind:placeholder="inputHint" v-model.trim="inputContent" :oninput="oninputContent"/>
     <img class="delete" src="../../assets/images/icon_close.png" v-show="isShowDelte" v-on:click="clearInput"/>
   </div>
 </template>
@@ -28,11 +28,16 @@
           return true;
         }
         return false;
+      },
+      oninputContent(){
+        if(this.inputType == 'number'){
+          return 'value=value.replace(/[^\\d]/g,\'\')';
+        }
       }
     },
     methods:{
       clearInput(){
-        this.inputContent = '';
+        this.inputContent = 'value=value.replace(/[^\\d]/g,\'\')';
       }
     }
   }

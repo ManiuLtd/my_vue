@@ -1,7 +1,7 @@
 <template>
     <div class="box">
       <!--  顶部header begin  -->
-      <top-header title-txt="添加商品"></top-header>
+      <top-header title-txt="商品列表"></top-header>
       <div class="content">
         <img src="../assets/images/icon_product_add.png"/>
         <span>您还没有商品，快添加吧~</span>

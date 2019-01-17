@@ -1,70 +1,101 @@
 <template>
     <div class="msg_box">
+      <div class="page_bg"></div>
       <top-header title-txt="消息中心"></top-header>
       <ul class="msg_content">
-        <li v-for="(msg,index) in msgList" @click="openMsg($event)" :key="index">
-          <img src="../assets/images/icon_message_center.png" alt="">
-          <p class="msg_title_fold" v-text="msg.msg_content"></p>
-          <p class="msg_time" v-text="msg.msg_add_time"></p>
-        </li>
+          <van-list v-model="loading" :finished="finished" @load="getMessage" >
+              <li v-for="(msg,index) in msgList" @click="readMsg(index+1,msg,$event)" :key="index">
+                  <img :src="msg.read_status == 1 ?readImg:unreadImg" alt="">
+                  <p :class="{msg_title_fold:openMsg != index+1}" v-text="msg.msg_content"></p>
+                  <p class="msg_time" v-text="msg.msg_add_time" v-show="openMsg != index+1"></p>
+              </li>
+          </van-list>
       </ul>
     </div>
 </template>
 
 <script>
-
   import * as API from '../service/API';
-  import Loading from '../widget/loading/loading'
+  import Toast from '../widget/Toast';
   import TopHeader from '../components/TopHeader';
 
     export default {
       data(){
         return {
-          msgList:[]
+          msgList:[],
+          loading: false,
+          runload:false,
+          finished: false,
+          pageInfo:{
+            total:0,
+            currPage:1,
+            nextPage:0,
+            pageCount:0
+          },
+          openMsg:'',   //展开消息
+          readImg:require("../assets/images/icon_message_center.png"),
+          unreadImg:require("../assets/images/icon_message_center_unread.png")
         }
       },
       methods:{
         getMessage(){
-          let loading = new Loading();
-          loading.show();
-          this.$get(API.MESSAGE).then((response)=>{
+          if(this.runload){
+            return ;
+          }
+          this.runload = true;
+          let data = {};
+
+          if(this.pageInfo.currPage != this.pageInfo.pageCount){
+            data.p = this.pageInfo.nextPage;
+          }
+          this.$post(API.MESSAGE,data).then((response)=>{
+            this.runload = false;
+            this.loading = false;
             if(response.code != 200){
               new Toast(response.msg).show();
               return ;
             }
-            this.msgList = response.message_list;
-            loading.close();
-          }).then((error)=>{
-            loading.close();
+            this.pageInfo = response.pageInfo;
+            if(this.pageInfo.currPage ==this.pageInfo.pageCount){
+              this.finished = true;
+            }
+            if(response.message_list.length > 0){
+              this.msgList = this.msgList.concat(response.message_list);
+            }else{
+              this.finished = true;
+            }
+
           });
         },
-        setBg(){
-          let screenHeigt = window.screen.availHeight;
-          let topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-          document.getElementsByClassName('msg_box')[0].style.minHeight = screenHeigt - topHeight + 'px';
-          document.getElementsByClassName('msg_box')[0].style.backgroundColor = '#eee';
-        },
-        openMsg(event){
-          var that = event.currentTarget;
-          that.childNodes[2].className='';
-          that.childNodes[4].style='display:none;';
-          var sib = this.siblings(that);
-          for(var i = 0;i<sib.length;i++){
-            sib[i].childNodes[2].className='msg_title_fold';
-            sib[i].childNodes[4].style='display:block;';
+        readMsg(i,msg,event){
+          let that = event.currentTarget;
+          if(msg.read_status == 0){
+            let request_url = API.BASEURL+"/admin/message/"+msg.msg_id+".html";
+            this.$get(request_url).then((response)=>{
+              if(!response){
+                new Toast(response.msg).show();
+                return;
+              }else if(response){
+                msg.read_status = 1;
+                that.children[0].setAttribute("src",this.readImg);
+                if(this.openMsg == i){
+                  this.openMsg = false;
+                }else {
+                  this.openMsg = i;
+                }
+              }
+            });
+          }else{
+            that.children[0].setAttribute("src",this.readImg);
+            if(this.openMsg == i){
+              this.openMsg = false;
+            }else {
+              this.openMsg = i;
+            }
           }
         },
-        siblings(elm) {
-          var a = [];
-          var p = elm.parentNode.children;
-          for(var i =0,pl= p.length;i<pl;i++) {
-            if(p[i] !== elm) a.push(p[i]);
-          }
-          return a;
-        }
       },
       mounted() {
-        this.setBg();
         this.getMessage();
       },
       components:{
@@ -76,9 +107,8 @@
 <style lang="scss" scoped>
   @import "../style/common.scss";
   .msg_content{
-    margin-top: 1.62rem;
     background-color: white;
-    padding: 0 .3rem;
+    padding: 1.62rem .3rem 0;
   }
   .msg_content li{
     position: relative;

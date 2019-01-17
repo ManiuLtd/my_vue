@@ -1,6 +1,6 @@
 <template>
     <div class="radio_content">
-      <input type="radio" class="rdo" v-bind:name="radio_name" v-bind:checked="isChecked" :value="radio_val" @change="radio_change"/>
+      <input type="radio" class="rdo" v-bind:name="radio_name" :disabled="isDisabled" v-bind:checked="isChecked" :value="radio_val" @change="radio_change"/>
       <span class="val" v-text="radio_title"></span>
     </div>
 </template>
@@ -9,6 +9,9 @@
     export default {
       props:{
         isChecked:{
+          default:false
+        },
+        isDisabled:{
           default:false
         },
         radio_name:{

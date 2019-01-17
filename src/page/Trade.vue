@@ -1,18 +1,16 @@
 <template>
   <div>
     <top-header title-txt="选择行业" father-right="确定" @callBackRightClick="saveTrade"></top-header>
-    <ul style="margin-top: 1.61rem;" class="clear">
+    <ul style="padding-top: 1.61rem;" class="clear">
       <li v-for="(trade,index) in tradeList" v-text="trade.pt_name" @click="chooseTrade(trade)" :class={choose_title:selectTradeIds.includes(trade.pt_id)}></li>
     </ul>
   </div>
 </template>
 <script>
-
   import * as API from '../service/API';
   import Toast from '../widget/Toast';
   import TopHeader from '../components/TopHeader'
   import eventBus from  '../utils/eventBus'
-  import Loading from '../widget/loading/loading'
 
   export default {
     data() {
@@ -26,18 +24,13 @@
     },
     methods:{
       getTrade(){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.PARTNER_TRADE_INFO).then((response)=>{
           if(response.code!=200){
             new Toast(response.msg).show();
             return;
           }
           this.tradeList = response.data;
-          loading.close();
-        }).then((error)=>{
-          loading.close();
-        });
+        })
       },
       saveTrade(){
         eventBus.$emit('getTrade',{tradeRate:this.selectTradeRate,tradeName:this.selectTradeName});

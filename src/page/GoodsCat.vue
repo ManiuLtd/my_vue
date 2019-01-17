@@ -7,12 +7,10 @@
     </div>
 </template>
 <script>
-
   import * as API from '../service/API';
   import Toast from '../widget/Toast';
   import TopHeader from '../components/TopHeader'
   import eventBus from  '../utils/eventBus'
-  import Loading from '../widget/loading/loading'
 
   export default {
         data() {
@@ -25,18 +23,13 @@
         },
       methods:{
         getBrand(){
-          let loading = new Loading();
-          loading.show();
           this.$get(API.CATE_OPTIONS).then((response)=>{
             if(response.code!=200){
               new Toast(response.msg).show();
               return;
             }
             this.brandList = response.options;
-            loading.close();
-          }).then((error)=>{
-            loading.close();
-          });
+          })
         },
         saveBrand(){
           eventBus.$emit('getGoodsCat',{brandIds:this.selectBrandIds,brandNames:this.selectBrandNames});

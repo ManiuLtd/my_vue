@@ -1,41 +1,39 @@
 <template>
     <div>
       <top-header title-txt="选择品牌" father-right="确定" @callBackRightClick="saveBrand"></top-header>
-      <ul style="margin-top: 1.61rem;" class="clear">
+      <ul style="padding-top: 1.61rem;" class="clear">
         <li v-for="(brand,index) in brandList" v-text="brand.gbName" @click="chooseBrand(brand)" :class={choose_title:selectBrandIds.includes(brand.gbId)}></li>
       </ul>
     </div>
 </template>
 <script>
-
   import * as API from '../service/API';
   import Toast from '../widget/Toast';
-  import TopHeader from '../components/TopHeader'
-  import eventBus from  '../utils/eventBus'
-  import Loading from '../widget/loading/loading'
+  import TopHeader from '../components/TopHeader';
+  import eventBus from  '../utils/eventBus';
 
   export default {
-        data() {
-            return {
-              brandList:[],
-              selected:[],
-              selectBrandIds:[],
-              selectBrandNames:[]
-            };
-        },
+      data() {
+          return {
+            brandList:[],
+            selected:[],
+            selectBrandIds:[],
+            selectBrandNames:[]
+          };
+      },
       methods:{
         getBrand(){
-          let loading = new Loading();
-          loading.show();
-          this.$get(API.BRAND_OPTIONS).then((response)=>{
+          let cate_id = this.$route.params.id;
+          if(!cate_id){    //分类页面已做拦截，这儿继续做保护拦截
+            new Toast("请先选择商品分类").show();
+            return;
+          }
+          this.$get(API.GOODS_BRANDS + `?cate_id=${cate_id}`).then((response)=>{
             if(response.code!=200){
               new Toast(response.msg).show();
               return;
             }
             this.brandList = response.options;
-            loading.close();
-          }).then((error)=>{
-            loading.close();
           });
         },
         saveBrand(){
@@ -56,7 +54,7 @@
           }
         },
       },
-      mounted(){
+      activated(){
         this.getBrand();
       },
       components:{TopHeader}

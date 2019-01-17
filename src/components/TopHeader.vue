@@ -1,8 +1,10 @@
 <template>
   <div class="common_header">
-    <img src="../assets/images/back_left_blank.png" @click="back">
+    <img src="../assets/images/back_left_blank.png" @click="back(frouter)">
     <span class="title" v-text="titleTxt"></span>
-    <span class="right" v-on:click="rightClick" v-text="fatherRight"></span>
+    <!--有两个右侧布局，需要判断v-if是否为空，来决定是否显示右侧这个文案，否则会导致中间titel不居中-->
+    <span class="right" v-on:click="rightClick" v-html="fatherRight" v-if="!isHasSlot"></span>
+    <slot name="rightImg"></slot>
   </div>
 </template>
 
@@ -14,14 +16,24 @@
         },
         fatherRight:{
           default: ''
+        },
+        frouter:{
+          default:''
+        },
+        isHasSlot:{
+          default:false
         }
       },
       methods:{
         rightClick(){
           this.$emit('callBackRightClick');
         },
-        back(){
-          this.$router.go(-1);
+        back(router){
+          if(router && router!=''){
+            this.$router.replace(''+ router +'')
+          }else {
+            this.$router.go(-1);
+          }
         }
       }
     }

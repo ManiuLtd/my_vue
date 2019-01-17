@@ -5,50 +5,33 @@
       <span>很抱歉</span>
       <span>您的认证被拒绝</span>
     </div>
+    <p class="sign_out" @click="signOut()">
+      <span>退出登录</span>
+    </p>
   </div>
 </template>
 <script>
-    import eventBus from  '../utils/eventBus';
-    import Loading from '../widget/loading/loading';
-    import * as API from '../service/API';
-    import Toast from '../widget/Toast';
+    import { loginRedirect } from '../utils/RouterControl';
+    import { showDialog } from '../utils/RouterControl'
+
     export default {
-      data() {
-          return {
-            failMsg:'',
-            failTime:''
-          };
-      },
-      created(){
-        eventBus.$on('info',this.getFail);
-      },
       mounted(){
-        //this.getPartnerInfo();
+        loginRedirect(this);
       },
       methods:{
-        getFail(data){
-          this.failMsg = data.failMsg;
-          this.failTime = data.runTime;
+        signOut(){
+          showDialog(this);
         },
-        getPartnerInfo(){
-          let loading = new Loading();
-          loading.show();
-          this.$get(API.PARTNER_INFO).then((response)=>{
-            if(response.code != 200){
-              new Toast(response.msg).show();
-              return;
-            }
-            this.failMsg = response.data.check_feedback;
-            //this.failTime = response.data.check_pass_time;
-            loading.close();
-          }).then((error)=>{
-            loading.close();
-          });
-        }
       }
     }
 </script>
-<style scoped>
+<style lang="scss" scoped>
+  @import "../style/common.scss";
+  .content{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
   .content #logo{
     width: 4.16rem;
     height: 1.17rem;
@@ -75,5 +58,16 @@
   }
   .info span{
     display: inline-block;
+  }
+  .sign_out{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: .36rem 0;
+    color: $main_grren;
+    font-size: 0.48rem;
+    border:1px solid $main_grren;
+    border-radius: .3rem;
+    margin: 2.9rem 1.26rem 0;
   }
 </style>

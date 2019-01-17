@@ -1,5 +1,6 @@
 <template>
-  <div class="orderContent" style="background-color: #eee;">
+  <div class="orderContent">
+    <div class="page_bg"></div>
     <div class="content_header">
       <!--搜索-->
       <div class="top_header">
@@ -8,80 +9,86 @@
           <input type="text" v-model="searchData.search_key" placeholder="输入订单号或买家手机号"/>
         </div>
       </div>
-      <!--tab切换-->
-      <div class="tab">
-        <div class="order_loan" @click="switchTab(2)">
-          <div id="tab_loan" :class="{tab_selected : currentSelected == 2}">全款订单</div>
-          <img :src="currentSelected == 2 ? '../static/images/order_tab_select.png' : '../static/images/order_tab_no_select.png'"/>
-        </div>
-        <div class="order_money" @click="switchTab(3)">
-          <div id="tab_money" :class="{tab_selected : currentSelected == 3}">赊购订单</div>
-          <img  :src="currentSelected == 3 ? '../static/images/order_tab_select.png' : '../static/images/order_tab_no_select.png'"/>
-        </div>
-      </div>
+      <div class="order-title">订单列表</div>
       <!--筛选-->
       <div class="select">
-        <div class="state" @click="isState = true">
-          <span v-text="orderStateIndex.toString() == '-1' ? '状态' : orderStatusList[orderStateIndex]" class="screen_text"></span>
-          <img src="../assets/images/icon_down.png">
+        <div class="state" @click="stateChoose">
+          <span v-text="orderStateIndex == '' ? '状态' : orderStateIndex.toString() == '-1' ? '全部' : orderStatusList[orderStateIndex]" :class="{'screen_text':true,'choose_screen':isShowState||orderStateIndex.toString() != ''}"></span>
+          <img v-if="!isShowState&&orderStateIndex.toString() == ''" src="../assets/images/icon_down_nochoose.png">
+          <img v-if="isShowState" src="../assets/images/icon_down_choose.png">
+          <img v-if="!isShowState&&orderStateIndex.toString() != ''" src="../assets/images/icon_clear_choose.png" @click="setup(1)" @click.stop>
         </div>
-        <div class="begin_time" @click="isStartTime = true">
-          <span v-text="startTime" class="screen_text"></span>
-          <img src="../assets/images/icon_down.png">
+        <div class="begin_time" @click="startTimeChoose">
+          <span v-text="startTime" :class="{'screen_text':true,'choose_screen':isStartTime||startTime!='开始时间'}"></span>
+          <img v-if="!isStartTime&&startTime=='开始时间'" src="../assets/images/icon_down_nochoose.png">
+          <img v-if="isStartTime" src="../assets/images/icon_down_choose.png">
+          <img v-if="!isStartTime&&startTime!='开始时间'" src="../assets/images/icon_clear_choose.png" @click="setup(2)" @click.stop>
         </div>
-        <div class="end_time" @click="isEndTime = true">
-          <span v-text="endTime" class="screen_text"></span>
-          <img src="../assets/images/icon_down.png">
+        <div class="end_time" @click="endTimeChoose">
+          <span v-text="endTime" :class="{'screen_text':true,'choose_screen':isEndTime||endTime!='结束时间'}"></span>
+          <img v-if="!isEndTime&&endTime=='结束时间'" src="../assets/images/icon_down_nochoose.png">
+          <img v-if="isEndTime" src="../assets/images/icon_down_choose.png">
+          <img v-if="!isEndTime&&endTime!='结束时间'" src="../assets/images/icon_clear_choose.png" @click="setup(3)" @click.stop>
         </div>
       </div>
     </div>
     <!--筛选状态-->
-    <div v-if="isState">
-    <van-popup v-model.trim="isState" position="bottom" >
-      <van-picker
-        show-toolbar
-        :columns="orderStatusTypeList"
-        @confirm="stateConfirm"
-        @cancel="isState = false"
-        @change="stateChange"
-      ></van-picker>
-    </van-popup>
-    </div>
-    <!--选择开始时间-->
-    <van-popup v-model.trim="isStartTime" position="bottom">
-      <van-datetime-picker type="datetime" v-model="currentDate" :formatter="formatter"  @confirm="startTimeConfirm" @cancel="isStartTime = false" />
-    </van-popup>
-    <!--选择结束时间-->
-    <van-popup v-model.trim="isEndTime" position="bottom">
-      <van-datetime-picker type="datetime" v-model="currentDate" :formatter="formatter" @confirm="endTimeConfirm" @cancel="isEndTime = false" />
-    </van-popup>
-    <!--订单列表-->
-    <div style="height: 4.5rem;"></div>
-    <van-list v-model="loading" :finished="finished" @load="getOrders" >
-      <div v-for="(info,index) in orderList" class="item" style="background-color: white" @click="checkOrderInfo(info.order_id)">
-        <div class="item-title">
-          <span class="order_no">订单编号：{{ info.order_no }}</span>
-          <span class="oreder_state">{{ orderStatusList[info.order_status] }}</span>
+    <pop-menu style="margin-top: 4.1rem" :is-show="isShowState" @setIsShow="setIsShowPopMenu">
+      <div slot="list">
+        <div class="state-item" v-for="item in orderStatusTypeList"  @click="stateConfirm(item)">
+          <span class="item-content">{{item.text}}</span>
         </div>
-        <ul class="order_info">
-          <li id="order_name">姓名：{{ info.consignee }}</li>
-          <li id="order_account">收货手机号：{{ info.consignee_mbl }}</li>
-          <li id="order_time">下单时间：{{ info.order_add_time }}</li>
-          <li id="order_money">实收金额：￥{{ info.order_fat_pay_amount }}</li>
-        </ul>
       </div>
-    </van-list>
-
-    <p class="bar_tite" v-text="barTite"></p>
-    <div style="height: 2rem;"></div>
+    </pop-menu>
+    <!--选择开始时间-->
+    <pop-menu style="margin-top: 4.1rem" :is-show="isStartTime" @setIsShow="setIsShowStartPopMenu">
+      <div slot="list">
+        <van-datetime-picker type="datetime" :max-date="eMaxDate" v-model="startCurrentDate" @confirm="startTimeConfirm" @cancel="isStartTime = false" />
+      </div>
+    </pop-menu>
+    <!--选择结束时间-->
+    <pop-menu style="margin-top: 4.1rem" :is-show="isEndTime" @setIsShow="setIsShowEndPopMenu">
+      <div slot="list">
+        <van-datetime-picker type="datetime" :max-date="maxDate" :min-date="minDate" v-model="endCurrentDate" @confirm="endTimeConfirm" @cancel="isEndTime = false" />
+      </div>
+    </pop-menu>
+    <!--订单列表-->
+    <div style="height: 4.21rem;"></div>
+    <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
+      <van-list v-model="loading" :finished="finished" @load="getOrders" >
+        <div v-for="info in orderList" class="item" style="background-color: white;padding: .45rem 0;margin-bottom: .2rem;" @click="checkOrderInfo(info.order_id)">
+          <div class="item-info">
+            <div class="send-type">
+              <img class="send-type-img" :src=" info.order_delivery_type == 1 ? '../../static/images/icon_distribution.png' : '../../static/images/icon_self.png'"/>
+            </div>
+            <div class="item-content">
+              <div class="item-overview">
+                <span class="order-receiver">收货人：{{ info.consignee }} {{ info.consignee_mbl }}</span>
+                <span class="order-state">{{orderStatusList[info.order_status]}}</span>
+              </div>
+              <span class="order-num">订单编号：{{ info.order_no }}</span>
+              <span class="order-time">下单时间：{{ info.order_add_time }}</span>
+              <span class="send-type-content">配送方式：{{ info.order_delivery_type == 1 ? '商家配送' : '用户自提'}}</span>
+            </div>
+          </div>
+          <div class="item-money">
+            <span class="money-tips">实付金额：</span>
+            <span class="order-money">￥{{ info.order_fat_pay_amount }}</span>
+          </div>
+        </div>
+      </van-list>
+      <p class="bar_tite" v-text="barTite"></p>
+      <div style="height: 2rem;"></div>
+    </van-pull-refresh>
   </div>
 </template>
+
 <script>
   import * as API from '../service/API';
   import Toast from '../widget/Toast';
-  import Loading from '../widget/loading/loading'
   import DateUtils from '../utils/DateUtils';
-  import eventBus from  '../utils/eventBus'
+  import SuccessLoading from "../widget/sucess_loading/SuccessLoading";
+  import PopMenu from '../components/PopMenu'
 
   export default {
     data() {
@@ -100,7 +107,10 @@
             select:''
           }
         },
-        orderStateIndex:'-1', //选中订单的状态
+        eMaxDate: new Date(),     // 选择开始时间的最大时间
+        maxDate: new Date(),    //  结束时间的最大时间
+        minDate:'',            // 结束时间最小时间（开始时间）
+        orderStateIndex:'', //选中订单的状态
         startTime: '开始时间',
         endTime: '结束时间',
         isState: false,     // 状态
@@ -109,11 +119,8 @@
         startTimeData: '',   //  开始时间选择
         endTimeData: '',   //  结束时间选择
         barTite:'没有更多啦~',    //  底部字段显示
-        docmHeight: '0',  //默认屏幕高度
-        showHeight:  '0',  //实时屏幕高度
-        hidshow: true, //显示或者隐藏footer,
-        isResize: false, //默认屏幕高度是否已获取
-        currentDate: new Date(),
+        startCurrentDate: new Date(),
+        endCurrentDate: new Date(),
         loading: false,
         runload:false,
         finished: false,
@@ -126,12 +133,15 @@
           pageCount:0
         },
         searchData:{
-          order_pay_type:'2',
-          order_status:'',
-          o_start:'',
-          o_end:'',
+          order_pay_type:'2',   //支付类型
+          order_status:'',    //订单状态
+          o_start:'',   //开始时间
+          o_end:'',      //结束时间
           search_key:'',
-        }
+        },
+        clientHeight:document.documentElement.clientHeight,
+        isLoading: false,
+        isShowState: false
       };
     },
     computed: {
@@ -142,76 +152,63 @@
     watch: {
       searchChang: function () {
         clearTimeout(this.timerOuter);
-
         if(this.searchData.search_key.length >= 2 || this.searchData.search_key.length == ''){
-          console.log(this.searchData.search_key.length);
           let that = this;
           this.timerOuter = setTimeout(function(){
             that.pageInfo = {
               total:0,
-                currPage:1,
-                nextPage:0,
-                pageCount:0
+              currPage:1,
+              nextPage:0,
+              pageCount:0
             }
+            that.finished = false;
             that.orderList = [];
             that.getOrders();
           },500)
         }
-
       },
-      showHeight:function() {
-        if(this.docmHeight > this.showHeight){
-          this.hidshow=false
-        }else{
-
-          this.hidshow=true
-        }
-      }
     },
-    mounted() {
-      // window.onresize监听页面高度的变化
-      window.onresize = ()=>{
-        return(()=>{
-          if (!this.isResize) {
-            //默认屏幕高度
-            this.docmHeight = document.documentElement.clientHeight;
-            this.isResize = true
-          }
-          //实时屏幕高度
-          this.showHeight = document.body.clientHeight
-        })()
-      }
+    activated(){
+      this.getOrders();
     },
-    destroyed(){
-      eventBus.$emit('bottomShop',this.hidshow);
-    },
+    mounted() {},
     methods: {
+      setIsShowPopMenu(isShow){
+        this.isShowState = isShow;
+      },
+      setIsShowStartPopMenu(isShow){
+        this.isStartTime = isShow;
+      },
+      setIsShowEndPopMenu(isShow){
+        this.isEndTime = isShow;
+      },
+      //状态确定
+      stateConfirm(item) {
+        this.orderStateIndex = item.key;
+        this.searchData.order_status = item.key;
+        this.isShowState = false;
+      },
       getOrders() {
+        // this.finished 表示加载完毕结束
         if(this.runload){
           return ;
         }
-
         this.runload = true;
-
         let data = {};
         data.jdata = {};
-        for (var index in this.searchData){
+        for (let index in this.searchData){
           if(this.searchData[index]){
             data.jdata[index] = this.searchData[index];
           }
         }
-
         if(data.jdata['order_status'] < 0){
           delete data.jdata['order_status'];
         }
-
         if(this.pageInfo.currPage != this.pageInfo.pageCount){
           data.p = this.pageInfo.nextPage;
         }
         data.jdata = JSON.stringify(data.jdata);
-        let loading = new Loading();
-        loading.show();
-
+        this.loading = true;
         this.$post(API.ORDER_LIST,data).then((response) => {
           this.runload = false;
           if (response.code != 200) {
@@ -220,6 +217,11 @@
           }
           if(response.orderList.length > 0){
             this.orderList = this.orderList.concat(response.orderList);
+
+          }else {
+            this.finished = true;
+          }
+          if(this.orderStatusList.length == 0){
             this.orderStatusList = response.order_status;
           }
           this.pageInfo = response.pageInfo;
@@ -238,39 +240,22 @@
           }
           this.loading = false;
           if(this.orderList.length > 0){
-            this.barTite = '没有更多啦~' ;
-          }else {
-            this.barTite = '您还没有订单哦~' ;
+            this.barTite = '没有更多啦~';
+          }else if(this.searchData.search_key.length > 0){
+            this.barTite = '暂无搜索结果~';
+          }else{
+            this.barTite = '您还没有订单哦~';
           }
-          loading.close();
         }).then((error)=>{
           this.runload = false;
-          loading.close();
         });
-      },
-      switchTab(tab) {
-        this.currentSelected = tab;
-        this.searchData.order_pay_type = tab;
-        this.orderStateIndex = -1;
-        console.log(this.pickerObj);
-        this.pickerObj.setColumnIndex(0);
-        this.searchData.order_status = '';
-        //this.getOrders();
       },
       checkOrderInfo(id) {
         this.$router.push({path: `/orderDetails/${id}`});
       },
-      //状态确定
-      stateConfirm(value, index) {
-        this.orderStateIndex = value.key;
-        this.searchData.order_status = value.key;
-        this.isState = false;
-        //this.getOrders();
-      },
       //状态改变
       stateChange(picker,value, index) {
         this.pickerObj = picker;
-        console.log(this.pickerObj);
       },
       //开始时间确认
       startTimeConfirm(val){
@@ -278,7 +263,37 @@
         this.startTimeData = new DateUtils().formatDate(val,'yyyy-MM-dd HH:mm:ss');
         this.startTime = new DateUtils().formatDate(val,'yyyy-MM-dd HH:mm:ss');
         this.searchData.o_start = new DateUtils().formatDate(val,'yyyy-MM-dd HH:mm:ss');
-        this.getOrders();
+        this.minDate = val;
+        //this.getOrders();
+      },
+      // 点击选择状态
+      stateChoose(){
+        this.isShowState = !this.isShowState;
+        if(this.isShowState){
+          this.isStartTime = false;
+          this.isEndTime = false;
+        }
+      },
+      // 点击选择开始状态
+      startTimeChoose(){
+        this.isStartTime = !this.isStartTime;
+        if(this.isStartTime){
+          this.isShowState = false;
+          this.isEndTime = false;
+        }
+      },
+      //点击选择结束时间
+      endTimeChoose(){
+        if(this.searchData.o_start!=''){
+          this.isEndTime = !this.isEndTime;
+          if(this.isEndTime){
+            this.isStartTime = false;
+            this.isShowState = false
+          }
+        }else {
+          new Toast('请先选择开始时间！').show();
+          return;
+        }
       },
       //结束时间确认
       endTimeConfirm(val){
@@ -286,36 +301,46 @@
         this.endTimeData = new DateUtils().formatDate(val,'yyyy-MM-dd HH:mm:ss');
         this.endTime = new DateUtils().formatDate(val,'yyyy-MM-dd HH:mm:ss');
         this.searchData.o_end = new DateUtils().formatDate(val,'yyyy-MM-dd HH:mm:ss');
-        this.getOrders();
+        this.eMaxDate = val;
+        //this.getOrders();
       },
-      //    选择数据
-      formatter(type, value) {
-        if (type === 'year') {
-          return `${value}年`;
-        } else if (type === 'month') {
-          return `${value}月`
-        } else if (type === 'day') {
-          return `${value}日`
-        } else if (type === 'hour') {
-          return `${value}时`
-        } else if (type === 'minute') {
-          return `${value}分`
+      //清空按钮
+      setup(v){
+        if(v==1){
+          this.searchData.order_status = '-1';
+          this.orderStateIndex = '';
+        }else if(v==2){
+          this.searchData.o_start = '';
+          this.startTime = '开始时间';
+        }else if(v==3){
+          this.searchData.o_end = '';
+          this.endTime = '结束时间';
         }
-        return value;
       },
+      onRefresh() {
+        setTimeout(() => {
+          new SuccessLoading('刷新成功').show();
+          this.isLoading = false;
+        }, 500);
+      }
     },
-    mounted() {
-      this.getOrders();
+    components:{
+      PopMenu
     }
   }
 </script>
+
 <style lang="scss" scoped>
   @import "../style/common";
   /********header*********/
+  .orderContent{
+    background-color: #eeeeee;
+  }
   .content_header{
     width: 100%;
     position: fixed;
     top: 0;
+    z-index: 99999;
   }
 
   .top_header{
@@ -335,42 +360,28 @@
 
   .top_header .search img{
     padding-left: 0.5rem;
-    padding-bottom: 0.1rem;
-    width: 0.48rem;
-    height: 0.48rem;
+    padding-bottom: 0rem;
+    width: 0.46rem;
+    height: 0.46rem;
   }
 
   .top_header .search input {
+    padding-top: 0.1rem;
     width: 80%;
     border: none;
     outline: none;
     background-color: transparent;
-    font-size: 0.4rem;
+    font-size: 0.36rem;
     vertical-align: middle;
   }
 
-  /**tab**/
-  .tab{
-    height: 0.98rem;
-    background: white;
-    border-bottom: 1px solid #eeeeee;
-    font-size: 0;
-  }
-
-  .tab .order_loan,.order_money{
-    height: 0.98rem;
-    font-size: 0.4rem;
-    display: inline-block;
-    width: 50%;
-    text-align: center;
-  }
-  .tab_selected{
-    color: #47bb74;
-  }
-
-  .tab img{
-    padding-top: .34rem;
-    width: 1.64rem;
+  .order-title{
+    background-color: white;
+    font-size: 0.6rem;
+    color: #1a1b39;
+    display: block;
+    font-weight: bold;
+    padding-left: 0.45rem;
   }
 
   /*******select*******/
@@ -387,10 +398,10 @@
   }
 
   .select img{
-    padding-top: .13rem;
-    width: .25rem;
-    height: .13rem;
+    width: .34rem;
+    height: .34rem;
     margin-left: .15rem;
+    padding-top: .09rem;
   }
 
   .select .state{
@@ -405,66 +416,14 @@
     font-size: 0;
   }
 
+  .select .empty{
+    padding-top: .4rem;
+    margin-left: auto;
+    margin-right: .6rem;
+    font-size: .4rem;
+    color: $main_grren;
+  }
   /********item*********/
-  .item{
-    margin-top: 0.19rem;
-    background-color: white!important;
-  }
-
-  .item .item-title{
-    margin: 0 0.5rem;
-    padding: 0.37rem 0;
-    color: #999999;
-    font-size: 0.36rem;
-    border-bottom: #eeeeee 1px solid;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .item .item-title .oreder_state{
-    color: #db6045;
-  }
-
-  .item .order_info{
-    margin: 0.18rem 0.5rem 0.28rem 0.5rem;
-    padding-bottom: 0.28rem;
-    color: $font_100;
-    font-size: 0.4rem;
-    border-bottom: 1px solid #eeeeee;
-  }
-
-  .item ul li{
-    margin-top: 0.3rem;
-  }
-
-  .item .order_goods #goods_name{
-    color: $font_100;
-    font-size: 0.4rem;
-    margin-left: 0.5rem;
-  }
-
-  .item .order_goods #goods_info{
-    width: 100%;
-    color: #999999;
-    font-size: 0.4rem;
-    margin-left: 0.5rem;
-    margin-top: 0.22rem;
-    padding-bottom: 0.49rem;
-  }
-
-  .item .order_goods #goods_info span{
-    display: inline-block;
-  }
-
-  .item .order_goods #goods_info #goods_type{
-    width: 65%;
-  }
-
-  .item .order_goods #goods_info #goods_money {
-    float: right;
-    padding-right: 1rem;
-    color: $font_100;
-  }
 
   /*******筛选span*****/
   .screen_text{
@@ -472,11 +431,107 @@
     max-width: 2.5rem;
     vertical-align: middle;
   }
+  .choose_screen{
+    color: $main_grren!important;
+  }
   /*  提示  */
   .bar_tite{
     font-size: .32rem;
     text-align: center;
     color: #989898;
     margin: .2rem 0 .5rem;
+  }
+
+  /*  下拉刷新  */
+  .orderContent /deep/ .van-pull-refresh{
+    z-index: 999;
+  }
+
+  /**状态栏*/
+  .state-item{
+    line-height: 1rem;
+    width:100%;
+    .item-content{
+      padding-left: 0.52rem;
+      font-size: 0.4rem;
+      color: #1a1b39;
+    }
+  }
+  /*状态栏点击效果*/
+  .state-item:active{
+    background: rgba(76,195,173,0.1);
+    .item-content{
+      color: #4cc3ad;
+    }
+  }
+  /**时间选择点击效果*/
+  .orderContent .content .list .van-picker /deep/{
+    overflow: visible!important;
+  }
+  .orderContent .list .van-picker /deep/ .van-picker__toolbar{
+    position: absolute!important;
+    bottom: -44px!important;
+    left: 0!important;
+    right: 0!important;
+  }
+  .van-pull-refresh /deep/ .van-pull-refresh__track{
+    min-height: 8rem;
+  }
+
+  .item{
+    .item-info{
+      width: 100%;
+      display: flex;
+      .send-type{
+        display: flex;
+        padding-left: 0.45rem;
+        width: 12%;
+        .send-type-img{
+          width: 0.87rem;
+          height: 0.87rem;
+        }
+      }
+      .item-content{
+        width: 85%;
+        border-bottom: 1px solid #dfdfdd;
+        .item-overview{
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 0.45rem;
+          .order-receiver{
+            font-size: 0.45rem;
+            color: #1a1b39;
+          }
+          .order-state{
+            padding-right: 0.45rem;
+            color: #4cc3ad;
+            font-size: 0.45rem;
+          }
+        }
+        .order-num,.order-time,.send-type-content{
+          display: block;
+          margin-bottom: 0.3rem;
+          color: #999999;
+          font-size: 0.36rem;
+          /*强制一行显示*/
+          white-space:nowrap;
+        }
+        .send-type-content{
+          margin-bottom: 0.45rem;
+        }
+      }
+    }
+    .item-money{
+      margin: 0.49rem 0.5rem 0rem 0rem;
+      display: flex;
+      justify-content: flex-end;
+      .money-tips,.order-money{
+        font-size: 0.36rem;
+        color: #1a1b39;
+      }
+      .order-money{
+        font-weight: bold;
+      }
+    }
   }
 </style>

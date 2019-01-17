@@ -40,7 +40,7 @@
           <img :src="fileHost + item.g_imgs" alt="商品图片">
           <div class="product_price">
             <p class="product_title">{{item.g_name}}</p>
-            <p class="product_spec">{{item.gn_spec_num}}</p>
+            <p class="product_spec">{{item.gn_spec_num.replace('/',' ')}}/件</p>
             <p class="product_spec product_num">x{{item.order_goods_nums}}</p>
             <p class="product_spec product_money">￥{{item.goods_unit_price}}</p>
           </div>
@@ -135,12 +135,11 @@
   import Toast from '../widget/Toast';
   import eventBus from  '../utils/eventBus'
   import { Dialog } from 'vant'
-  import Loading from '../widget/loading/loading'
 
   export default {
     data() {
       return {
-        fileHost:'',
+        fileHost:process.env.ALY_IMG_URL,
         goodsList:[],
         order:{},
         order_pay_type:'',
@@ -165,8 +164,6 @@
         return has;
       },
       getOrderInfo(){
-        let loading = new Loading();
-        loading.show();
         let orderId = this.$route.params.id;
         let requestUrl = API.BASEURL + `/order/detail/${orderId}.html`;
         this.$get(requestUrl).then((response)=>{
@@ -177,8 +174,8 @@
           this.goodsList = response.goodsList;
           this.order = response.order;
 
-          this.orderPayMoney = this.order.order_fat_pay_amount;
-          this.order.order_fat_pay_amount -=  this.order.reduction_amount;
+          this.orderPayMoney = this.order.order_amount;
+          //this.order.order_fat_pay_amount -=  this.order.reduction_amount;
           if(response.logList.length > 0){
             this.oRemarts = response.logList[(response.logList.length - 1)].logAdminName ? response.logList[(response.logList.length - 1)].logRemark:'';
           }
@@ -190,27 +187,35 @@
           }else if(3 == this.order.order_pay_type){
             this.order_pay_type = '赊购';
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
       },
+      verifyBenefitAmount(){
+        if(this.offerMoney < 0){
+          new Toast("减免金额不能为负数").show();
+          return false;
+        }
+        if(parseFloat(this.offerMoney) > this.order.order_amount){
+          new Toast("减免金额不能大于订单金额").show();
+          return false;
+        }
+        return true;
+      },
       fixOrderMoney(){
-        let loading = new Loading();
-        loading.show();
+        if(!this.verifyBenefitAmount()) return false;
+        let data = {};
         let orderId = this.$route.params.id;
+        data.oId = orderId;
+        data.derate_amt = this.offerMoney;
         let requestUrl = API.BASEURL + `/order/modify/${orderId}.html?oId=${orderId}&derate_amt=${this.offerMoney}`;
-        this.$get(requestUrl).then((response)=>{
+        this.$post(requestUrl,data).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
             return;
           }
-          this.goodsList = response.goodsList;
-          this.order = response.order;
+          this.order.reduction_amount = data.derate_amt;
+          this.order.order_fat_pay_amount = this.orderPayMoney;
           new Toast("改价成功").show();
-          loading.close();
-        }).then((error)=>{
-          loading.close();
+          this.isShowDialog = false;
         });
       },
       orderTrackInfo(id){
@@ -221,10 +226,8 @@
       },
       sendOrder(id){
         Dialog.confirm({
-          message: '确认发货吗？'
+          title: '确认发货吗？'
         }).then(() => {
-          let loading = new Loading();
-          loading.show();
           var request_url = API.BASEURL+"/order/deliver_goods/"+id+".html";
           this.$post(request_url).then((response)=>{
             if(response.code != 200){
@@ -232,26 +235,23 @@
               return;
             }
             new Toast(response.msg).show();
-            loading.close();
             this.order.order_status = 5;
-          }).then((error)=>{
-            loading.close();
           })
         }).catch(() => {
           // on cancel
         });
       },
       changeMoney(){
-        this.orderPayMoney = this.order.order_fat_pay_amount - Number(this.offerMoney);
+        if(!this.verifyBenefitAmount()) return false;
+        this.orderPayMoney = this.order.order_amount - Number(this.offerMoney);
       },
       getORemarks(content){
         this.oRemartsIsShow = content.IsShow;
         this.oRemarts = content.oRemarks;
       }
     },
-    mounted(){
+    activated (){
       this.getOrderInfo();
-      this.fileHost = process.env.ALY_IMG_URL;
     },
     components:{
       TopHeader
@@ -261,7 +261,7 @@
 <style lang="scss" scoped>
   @import "../style/common";
   .order_details{
-    margin-top: 1.61rem;
+    padding-top: 1.61rem;
     background-color: #eee;
     margin-bottom: 1.4rem;
     padding-bottom: .4rem;
@@ -323,7 +323,7 @@
     display: inline-block;
     float: right;
     font-size: .4rem;
-
+    word-wrap: break-word;
     color: #1a1b39;
   }
   /*  商品详情  */
@@ -344,6 +344,7 @@
   .content .product img{
     width: 1.56rem;
     height: 1.56rem;
+    border-radius: 8px;
   }
   .content .product_price{
     max-width: 80%;
@@ -408,6 +409,8 @@
     padding: .3rem 0 .35rem;
     border-top: .1px solid #DFDFDD;
     font-size: 0.36rem;
+    padding-right: .5rem;
+    box-sizing: border-box;
   }
   .btn span{
     display: inline-block;

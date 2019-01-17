@@ -1,5 +1,6 @@
 <template>
   <div class="basic">
+    <div class="page_bg"></div>
     <top-header title-txt="资产信息"></top-header>
     <form class="content">
       <div class="input_content">
@@ -77,11 +78,9 @@
 </template>
 
 <script>
-
   import TopHeader from '../../components/TopHeader'
   import RadioButton from '../../components/common/RadioButton.vue'
   import * as API from '../../service/API'
-  import Loading from '../../widget/loading/loading'
 
   export default {
     name: "StoreInfo",
@@ -94,13 +93,11 @@
             vehicle_information: "",
             house_information: "",
             store_information: "",
-            other_asset_information:""
-        }
+            other_asset_information:"",
+        },
       }
     },
     created: function(){
-      let loading = new Loading();
-      loading.show();
       this.$get(API.PARTNER_ASSET_INFO).then((response)=>{
         if(response.code != 200){
             new Toast(response.msg).show();
@@ -112,15 +109,10 @@
             this.formData.private_loan = this.data.private_loan;
             this.formData.other_debt_loan = this.data.other_debt_loan;
         }
-        loading.close();
-      }).then((error)=>{
-        loading.close();
       });
     },
     methods: {
       submit: function () {
-        let loading = new Loading();
-        loading.show();
         this.$post(API.PARTNER_ASSET_INFO,this.formData).then((response)=>{
           if(response.code != 200){
               new Toast(response.msg).show();
@@ -128,17 +120,8 @@
           }else if(response.code == 200){
               this.data = response.data
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
       }
-    },
-    mounted() {
-      var screenHeigt = window.screen.availHeight;
-      var topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('basic')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('basic')[0].style.backgroundColor = '#eee';
     },
     components: {TopHeader,RadioButton}
   }

@@ -1,7 +1,7 @@
 <template>
     <div>
-      <top-header title-txt="商品发布规格"></top-header>
-      <div class="box">
+      <top-header title-txt="商品服务协议"></top-header>
+      <div class="agreement_box">
         <div class="agreement_content">
           <div class="licence">
             <h2 class="head_title text-center">青松云商商品发布及服务协议</h2>

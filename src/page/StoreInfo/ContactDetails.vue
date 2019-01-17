@@ -34,6 +34,7 @@
   import * as API from '../../service/API';
   import TopHeader from '../../components/TopHeader'
   import RadioButton from '../../components/common/RadioButton.vue'
+  import idCard from '../../utils/idCard'
 
   export default {
     name: "StoreInfo",
@@ -53,6 +54,7 @@
       getcontData(){
         const msgInfo = JSON.parse(sessionStorage.getItem('TMEP_MEG_INFO'));
         this.contData = msgInfo;
+        this.contData.age = idCard.getAgeByIdCard(this.contData.identNo);
       },
     },
     components: {TopHeader,RadioButton}
@@ -73,7 +75,7 @@
     color: $font_100;
     font-weight: 600;
     background: white url("../../assets/images/icon_contact_details.png") no-repeat center;
-    background-size: contain;
+    background-size: cover;
     margin-top: 1.82rem;
   }
   .c_name{
@@ -85,16 +87,20 @@
   }
   .c_box{
     margin-top: .3rem;
+    margin-bottom: 1px;
   }
   .c_info{
     padding: .65rem 1rem;
     border-bottom: 1px solid #F1F1F1;
+    padding-left: 0;
+    margin-left: 1rem;
   }
   .c_title{
     font-size: .36rem;
     color: #999999;
   }
   .c_content{
+    margin-top: .3rem;
     font-size: .48rem;
     color: $font_100;
   }

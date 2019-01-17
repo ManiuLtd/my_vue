@@ -1,7 +1,8 @@
 <template>
   <div class="basic">
+    <div class="page_bg"></div>
     <top-header title-txt="基本信息"></top-header>
-    <form class="content" onsubmit="return false">
+    <form class="content" onsubmit="return false" style="padding-bottom: 1.5rem">
       <div class="input_content" >
         <ul class="input_box">
           <li class="input_div">
@@ -40,8 +41,7 @@
           </li>
           <li class="input_div">
               <label>居住地址</label>
-              <input type="text" v-model.trim="address" placeholder="请选择" readonly="readonly" value="" class="icon_input">
-              <i class="icon_arrow"></i>
+              <input type="text" v-model.trim="address" placeholder="请选择" readonly="readonly" value="">
           </li>
           <li class="input_div">
             <label>详细地址</label>
@@ -49,7 +49,7 @@
           </li>
           <li class="input_div">
             <label>住宅电话</label>
-            <input type="text" v-model.trim="formData.home_phone" placeholder="输入电话" value="">
+            <input type="number" v-model.trim="formData.home_phone" placeholder="输入电话" value="" :oninput="oninputContent">
           </li>
           <li class="input_div">
             <label>电子邮箱</label>
@@ -67,8 +67,8 @@
         </ul>
       </div>
       <p class="must_title"></p>
-      <span @click="submit" class="preserve_btn">保存</span>
-    </form>
+    </form s>
+    <span @click="submit" :class="bottom_btn_style">保存</span>
     <van-popup v-model.trim="isShowEdu" position="bottom">
       <van-picker
               show-toolbar
@@ -87,9 +87,8 @@
   import * as API from '../../service/API'
   import Toast from '../../widget/Toast';
   import idCard from '../../utils/idCard'
-  import eventBus from  '../../utils/eventBus'
-  import Loading from '../../widget/loading/loading'
   import SuccessLoading from '../../widget/sucess_loading/SuccessLoading'
+  import * as constant from '../../utils/constant';
 
   export default {
     name: "BasicInfomation",
@@ -102,6 +101,7 @@
           birthday: '',
           address: '',
           degree: '',
+          oninputContent:constant.INPUTTYPE_NUMBER,
           columns:[],
           columnsObj:{},
           isChecked: {a:false,b:false,c:false,d:false},
@@ -116,12 +116,20 @@
               email: '',
               degree: '',
               together_live_person: '',
-          }
+          },
+        clientHeight:document.documentElement.clientHeight,
+        bottom_btn_style:'btn_fixed'
       }
     },
     methods: {
-      editBasic(){
-          this.$router.push('/basicInformationEdit');
+      resizeWindow(){
+        window.onresize = ()=>{
+          if(this.clientHeight>document.documentElement.clientHeight) {
+            this.bottom_btn_style = "btn_margin";
+          }else{
+            this.bottom_btn_style = "btn_fixed";
+          }
+        }
       },
       showEdu(){
           this.isShowEdu = true;
@@ -138,10 +146,8 @@
           this.isShowEdu = false;
       },
       submit: function () {
-        let loading = new Loading();
-        loading.show();
         this.$post(API.PARTNER_BASE_INFO,this.formData).then((response)=>{
-          if(response.code == 500){
+          if(response.code != 200){
               new Toast(response.msg).show();
               return;
           }else if(response.code == 200){
@@ -149,16 +155,7 @@
               new SuccessLoading(response.msg).show();
               this.$router.replace('/basicInformation');
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
-      },
-      getAddressData(data){
-          this.address = data.name;
-          this.formData.provinces = data.provinces;
-          this.formData.city = data.city;
-          this.formData.area = data.area;
       },
       radioChange(value){
           let v = parseInt(value);
@@ -181,8 +178,6 @@
           }
       },
       getData(){
-        let loading = new Loading();
-        loading.show();
           this.$get(API.PARTNER_BASE_INFO).then((response)=>{
               if(response.code != 200){
                   new Toast(response.msg).show();
@@ -210,19 +205,15 @@
                   this.formData.together_live_person = response.data.togetherLivePerson;
                   console.log(this.formData);
               }
-            loading.close();
-          }).then((error)=>{
-            loading.close();
           });
       }
     },
     mounted() {
-      var screenHeigt = window.screen.availHeight;
-      var topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('basic')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('basic')[0].style.backgroundColor = '#eee';
+      this.resizeWindow();
       this.getData();
-      eventBus.$on('getAddress',this.getAddressData)
+    },
+    destroyed(){
+      window.onresize = null;
     },
     components: {TopHeader,RadioButton}
   }
@@ -242,5 +233,29 @@
     right: .5rem;
     font-size: .48rem;
     color: $font_100;
+  }
+
+  /*提交按钮*/
+  .btn_fixed{
+    position: fixed;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
+  }
+
+  .btn_margin{
+    margin-top: -1.25rem;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
   }
 </style>

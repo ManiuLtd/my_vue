@@ -7,27 +7,47 @@
         <div class="title">邀请注册码</div>
       </div>
       <div class="qr_img">
-        <img src="../assets/images/qr_code.jpg" alt="">
+        <vue-qr :logoSrc="imageUrl" :margin="0" :text="codeValue" :logoScale="20" :size="200"></vue-qr>
         <p class="qr_title">扫描二维码，注册成为商城会员</p>
       </div>
-      <p class="qr_save">保存二维码图片到相册 <img src="../assets/images/icon_qr_white_arrow.png" alt=""></p>
+      <!--<p class="qr_save">保存二维码图片到相册 <img src="../assets/images/icon_qr_white_arrow.png" alt=""></p>-->
     </div>
 </template>
 <script>
-    export default {
-      data() {
-          return {};
+  import VueQr from 'vue-qr';
+  import * as API from '../service/API';
+  import Toast from "../widget/Toast";
+  export default {
+    data() {
+        return {
+          codeValue:'',
+          imageUrl: "../../static/images/store_logo.png"
+        };
+    },
+    methods:{
+      goBank(){
+        this.$router.go(-1);
       },
-      methods:{
-        goBank(){
-          this.$router.go(-1);
-        }
-      },
-      mounted () {
-        var screenHeigt = window.screen.availHeight;
-        document.getElementsByClassName('qr_content')[0].style.height=screenHeigt+'px';
-      },
-    }
+      qrcode () {
+        this.$get(API.CERTIFICATION).then((response)=>{
+          if(response.code == 200){
+            if((typeof response.data) == 'object'){
+              if(response.data.inviteCode != null && response.data.inviteCode.length != 0){
+                let text = API.BASEURL + '/index.html#Register?invite_code='+response.data.inviteCode;
+                this.codeValue = text;
+              }
+            }
+          }
+        })
+      }
+    },
+    mounted () {
+      var screenHeigt = window.screen.availHeight;
+      document.getElementsByClassName('qr_content')[0].style.height=screenHeigt+'px';
+      this.qrcode();
+    },
+    components:{VueQr}
+  }
 </script>
 <style lang="scss" scoped>
   @import "../style/common";

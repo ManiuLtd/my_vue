@@ -1,5 +1,6 @@
 <template>
   <div class="shop_create_content">
+    <div class="page_bg"></div>
     <top-header :title-txt="'规格'+specIndex" father-right="编辑"  @callBackRightClick="editSpec"></top-header>
     <form class="content">
       <div class="input_content">
@@ -26,11 +27,11 @@
           </li>
           <li class="input_div">
             <label><span class="must">*</span>剩余库存值(件)</label>
-            <input type="text"  v-model.trim="specInfo.gn_stock" readonly="readonly">
+            <input type="text" style="width: 55%;" v-model.trim="specInfo.gn_stock" readonly="readonly">
           </li>
           <li class="input_div">
             <label><span class="must">*</span>库存值提醒(件)</label>
-            <input type="text"  v-model.trim="specInfo.gn_stock_remind" readonly="readonly">
+            <input type="text" style="width: 55%;" v-model.trim="specInfo.gn_stock_remind" readonly="readonly">
           </li>
         </ul>
       </div>
@@ -45,22 +46,20 @@
   export default {
     data() {
       return {
-        specIndex:this.$route.params.id,
+        specIndex:'',
         specInfo:{},
         specType:'',
         gnSpecType:''
       };
     },
+    activated(){
+      this.specIndex = this.$route.params.id;
+    },
     created(){
       this.getSpecInfo();
       eventBus.$on('specDetail',this.getCacheSpecInfo);
     },
-    mounted() {
-      let screenHeigt = window.screen.availHeight;
-      let topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('shop_create_content')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('shop_create_content')[0].style.backgroundColor = '#eee';
-    },
+    mounted() {},
     methods:{
       editSpec(){
         sessionStorage.setItem('TMEP_GOODS_SPEC_INFO',JSON.stringify(this.specInfo));

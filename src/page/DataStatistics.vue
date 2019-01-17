@@ -1,9 +1,10 @@
 <template>
     <div class="data_statis">
+      <div class="page_bg"></div>
       <top-header title-txt="数据统计"></top-header>
       <!--tab 选择-->
       <div class="tips">默认显示最近一个月数据信息</div>
-      <div class="select_tab">
+      <div class="select_tab" v-if="false">
         <div class="tab_order" v-on:click="setSelect(0)">
           <span :class="{ 'span_unselect': allTab }">全部订单</span>
           <img src="../assets/images/icon_select_line.png" v-show="allTab"/>
@@ -98,7 +99,6 @@
   import * as API from '../service/API';
   import TopHeader from '../components/TopHeader';
   import Toast from "../widget/Toast";
-  import Loading from '../widget/loading/loading'
   import eventBus from  '../utils/eventBus'
 
   export default {
@@ -135,8 +135,6 @@
           this.getOrderStatistics();
         },
         getOrderTotle(){
-          let loading = new Loading();
-          loading.show();
           let orderData = {};
           if(this.selectDate){
             if(this.selectDate.timeIndex == 1){
@@ -151,14 +149,9 @@
               return;
             }
             this.merchantOrderData = res.series;
-            loading.close();
-          }).then((error)=>{
-            loading.close();
           });
         },
         getOrderStatistics(){
-          let loading = new Loading();
-          loading.show();
           let data = {};
           if(this.selectDate){
             if(this.selectDate.timeIndex == 2){
@@ -174,21 +167,18 @@
               return;
             }
             this.transactionData = response.series;
-            loading.close();
-          }).then((error)=>{
-            loading.close();
           });
         },
         getTime(content){
           this.selectDate = content;
-          this.getOrderTotle();
-          this.getOrderStatistics();
         }
       },
-      mounted(){
-        let screenHeigt = window.screen.availHeight;
-        document.getElementsByClassName('data_statis')[0].style.height=screenHeigt+'px';
-        document.getElementsByClassName('data_statis')[0].style.backgroundColor='#eee';
+      mounted(){},
+      activated(){
+        if(this.$store.state.pageRouter.isRefresh){
+          Object.assign(this.$data, this.$options.data());
+        }
+        this.$store.dispatch('setIsRefresh',false);
         this.getOrderTotle();
         this.getOrderStatistics();
       },
@@ -204,7 +194,7 @@
     font-size: .3rem;
     background-color: #fdeecc;
     color: #e36348;
-    margin-top: 1.61rem;
+    padding-top: 1.61rem;
     line-height: .76rem;
     padding-left: .52rem;
   }

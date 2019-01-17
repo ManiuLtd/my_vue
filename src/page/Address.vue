@@ -1,6 +1,6 @@
 <template>
   <div class="content">
-    <top-header title-txt="选择地址" father-right="保存" @callBackRightClick="submit"></top-header>
+    <top-header title-txt="选择地址" father-right="确定" @callBackRightClick="submit"></top-header>
     <div class="box">
       <div class="left">
         <p v-for="(classA,index) in arrA" v-text="classA.city_name" @click="getArrB(classA.city_key,$event)"></p>
@@ -18,8 +18,6 @@
 <script>
   import * as API from '../service/API';
   import TopHeader from '../components/TopHeader.vue'
-  import eventBus from  '../utils/eventBus'
-  import Loading from '../widget/loading/loading'
   import Toast from '../widget/Toast';
 
   export default {
@@ -29,17 +27,24 @@
         arrB:[],   //二级分类
         arrC:[],   //三级分类
         address:{
-            name : '',
-            provinces: '',
-            city: '',
-            area: '',
+          area: "",
+          area_name: "",
+          city: "",
+          city_name: "",
+          name: "",
+          province_name: "",
+          provinces: "",
+          lat:"",
+          lng:"",
+          selectAddress:""
         },
       };
     },
     methods: {
       submit(){
         if(this.address.area != ''){
-          eventBus.$emit('getAddress',this.address);
+          this.address.name = this.address.province_name +" "+ this.address.city_name +" "+ this.address.area_name;
+          this.$store.dispatch('saveAddress',this.address);
           this.$router.go(-1);
         }else{
           new Toast("省市县都不能为空！").show();
@@ -47,24 +52,18 @@
         }
       },
       chooseClass(){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.WAP_GEOGRAPHY_POSITION).then((res)=>{
           this.arrA = res.data;
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
       },
       getArrB(cate_id,event){
-        let loading = new Loading();
-        loading.show();
         this.arrC = [];
+        this.address.city_name = '';
+        this.address.city = '';
+        this.address.area_name = '';
+        this.address.area = '';
         this.$get(API.WAP_GEOGRAPHY_POSITION,{'pid':cate_id}).then((res)=>{
           this.arrB = res.data;
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
         var that = event.currentTarget;
         that.className='choose';
@@ -72,17 +71,17 @@
         for(var i = 0;i<sib.length;i++){
           sib[i].className='';
         }
-        this.address.name = that.innerHTML;
+        for(var j=0;j<document.getElementsByClassName('choose_title').length;j++){
+          document.getElementsByClassName('choose_title')[j].className = '';
+        }
+        this.address.province_name = that.innerHTML;
         this.address.provinces = cate_id;
       },
       getArrC(cate_id,event){
-        let loading = new Loading();
-        loading.show();
+        this.address.area_name = '';
+        this.address.area = '';
         this.$get(API.WAP_GEOGRAPHY_POSITION,{'pid':cate_id}).then((res)=>{
           this.arrC = res.data;
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
         var that = event.currentTarget;
         that.className='choose_title';
@@ -90,7 +89,7 @@
         for(var i = 0;i<sib.length;i++){
           sib[i].className='';
         }
-        this.address.name += ' '+that.innerHTML;
+        this.address.city_name = that.innerHTML;
         this.address.city = cate_id;
       },
       getcity(cate_id,e){
@@ -100,7 +99,7 @@
         for(var i = 0;i<sib.length;i++){
           sib[i].className='';
         }
-        this.address.name += ' '+that.innerHTML;
+        this.address.area_name = that.innerHTML;
         this.address.area = cate_id;
       },
       siblings(elm) {
@@ -144,7 +143,8 @@
     background-color: #EEEEEE;
   }
   .box .left p{
-    padding-left: .2rem;
+    box-sizing: border-box;
+    padding-left: .46rem;
   }
   /*   被选中的样式  */
   .box .left .choose{
@@ -152,8 +152,9 @@
     color: #4cc3ad;
   }
   .box .right{
-    padding-right: .2rem;
+    padding-right: .46rem;
     text-align: right;
+    box-sizing: border-box;
   }
   .box .right p{
     justify-content: flex-end;

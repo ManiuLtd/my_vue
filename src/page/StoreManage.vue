@@ -1,6 +1,6 @@
 <template>
   <div class="shop_home">
-    <top-header></top-header>
+    <top-header frouter="/main"></top-header>
     <div class="banner_contenr">
       <div class="shop_home_title">
         {{storeInfo.partner_name}}
@@ -8,17 +8,24 @@
            <img :src="storeInfo.partner_icon?fileHost+storeInfo.partner_icon:'../assets/images/icon_head_img.png'" alt="">
         </span>
       </div>
-      <p class="active" v-if="storeInfo.partner_coupons"><span class="active_btn">满减活动</span>
-        <span style="margin-right: .4rem" v-text="storeInfo.partner_coupons"></span>
-      </p>
+      <div class="business_status" v-if="storeStatus == 1">营业状态: 停业中</div>
+      <div class="business_status" v-if="storeStatus == 2">营业状态: 营业中</div>
+      <div class="business_status" v-if="storeStatus == 3">营业状态: 歇业中</div>
+      <div class="active" v-if="storeInfo.partner_coupons">
+        <span class="active_btn">满减活动</span>
+        <p :class="{'active_info':true,'active_info_show':isActivtShow}">
+          <span v-for="(item,index) in activeList" v-text="item"></span>
+        </p>
+        <i v-if="activeList.length > 2" :class="{'active_arrow_show':isActivtShow}" @click="activeShow"></i>
+      </div>
       <van-swipe :autoplay="3000">
         <van-swipe-item v-for="(image, index) in partnerImgs" :key="index">
-          <img :src="image" alt="" style="width: 9.8rem;height: 4.71rem;">
+          <img :src="image" alt="" style="width: 100%;height: 4.71rem;">
         </van-swipe-item>
       </van-swipe>
       <ul class="shop_home_module">
         <li>
-          <router-link to="/shopMsg">
+          <router-link to="/shopMsgEdit">
             <img src="../assets/images/icon_basic_info.png" alt="">
             <p>基本信息</p>
           </router-link>
@@ -29,11 +36,11 @@
             <p>配送信息</p>
           </router-link>
         </li>
-        <li @click="shopActive">
-          <!--<router-link to="/shopActiveList">-->
+        <li>
+          <router-link to="/shopActiveList">
             <img src="../assets/images/icon_reduce_active.png" alt="">
             <p>满减活动</p>
-          <!--</router-link>-->
+          </router-link>
         </li>
       </ul>
     </div>
@@ -43,24 +50,45 @@
       </p>
       <ul>
         <li>
-          <p class="info_title_msg"><img src="../assets/images/icon_position.png" alt="">店铺地址</p>
+          <p class="info_title_msg"><img src="../assets/images/icon_position.png" alt=""><span>店铺地址</span></p>
           <p class="info_title_num" v-text="storeInfo.partner_detail_address"></p>
         </li>
         <li>
-          <p class="info_title_msg"><img src="../assets/images/icon_phone.png" alt="">电话</p>
-          <p class="info_title_num" v-text="storeInfo.partner_phone">18856565623</p>
+          <p class="info_title_msg"><img src="../assets/images/icon_phone.png" alt=""><span>客服电话</span></p>
+          <p class="info_title_num" v-text="storeInfo.partner_phone"></p>
         </li>
         <li>
-          <p class="info_title_msg"><img src="../assets/images/icon_money.png" alt="">起送金额(元)</p>
+          <p class="info_title_msg"><img src="../assets/images/icon_delivery.png" alt=""><span>配送方式</span></p>
+          <p class="info_title_num" v-if="storeInfo.is_support_distribut=='1'">商家配送</p>
+          <p class="info_title_num" v-if="storeInfo.is_support_distribut=='2'">买家自提</p>
+        </li>
+        <li v-if="storeInfo.is_support_distribut=='1'">
+          <p class="info_title_msg"><img src="../assets/images/icon_money.png" alt=""><span>起送金额(元)</span></p>
           <p class="info_title_num">{{storeInfo.send_out_money}}</p>
         </li>
-        <li>
-          <p class="info_title_msg"><img src="../assets/images/icon_time.png" alt="">配送时间</p>
+        <li v-if="storeInfo.is_support_distribut=='1'">
+          <p class="info_title_msg"><img src="../assets/images/icon_time.png" alt=""><span>配送时间</span></p>
           <p class="info_title_num">{{storeInfo.begin_distribut_time}} — {{storeInfo.end_distribut_time}}</p>
         </li>
-        <li>
-          <p class="info_title_msg"><img src="../assets/images/icon_range.png" alt="">配送范围(直线距离)</p>
+        <li v-if="storeInfo.is_support_distribut=='1'">
+          <p class="info_title_msg"><img src="../assets/images/icon_range.png" alt=""><span>配送范围(直线距离)</span></p>
           <p class="info_title_num">{{storeInfo.distribut_distance}}公里以内</p>
+        </li>
+        <li v-if="storeInfo.is_support_distribut=='1'&& storeInfo.free_freight=='1'">
+          <p class="info_title_msg"><img src="../assets/images/icon_minimum_freight.png" alt=""><span>最低运费</span></p>
+          <p class="info_title_num">{{storeInfo.lowest_freight_distance}}公里以内，运费收取￥{{storeInfo.lowest_freight_money}}</p>
+        </li>
+        <li v-if="storeInfo.is_support_distribut=='1'&& storeInfo.free_freight=='1'">
+          <p class="info_title_msg"><img src="../assets/images/icon_additional_freight.png" alt=""><span>附加运费</span></p>
+          <p class="info_title_num">超出{{storeInfo.lowest_freight_distance}}公里，每增加{{storeInfo.addition_freight_distance}}公里，运费增加￥{{storeInfo.addition_freight_money}}</p>
+        </li>
+        <li v-if="storeInfo.partner_intro">
+          <p class="info_title_msg"><img src="../assets/images/icon_business_brief.png" alt=""><span>商家简介</span></p>
+          <p class="info_title_num" v-text="storeInfo.partner_intro"></p>
+        </li>
+        <li v-if="storeInfo.partner_notice">
+          <p class="info_title_msg"><img src="../assets/images/icon_announcement.png" alt=""><span>商家公告</span></p>
+          <p class="info_title_num" v-text="storeInfo.partner_notice"></p>
         </li>
       </ul>
     </div>
@@ -69,7 +97,6 @@
 
 <script>
   import * as API from '../service/API';
-  import Loading from '../widget/loading/loading'
   import TopHeader from '../components/TopHeader'
 
   export default {
@@ -77,52 +104,58 @@
       return {
         storeInfo:{},
         fileHost: process.env.ALY_IMG_URL,
-        partnerImgs:[
-        ]
+        partnerImgs:[],
+        storeStatus:'',   //  商户营业状态（1：强制营业(后台) 2：正常营业 3：暂停营业）
+        activeList:[],    // 满减活动显示
+        isActivtShow: false,
       }
     },
+    beforeRouteLeave(to,from,next){
+      if(to.path == '/shopMsgEdit' || to.path == '/shopDb'){
+        this.$store.dispatch('setIsRefresh',true);
+      }
+      next();
+    },
+   
     methods:{
       getStoreInfo(){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.PARTNER_INFO).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
             return ;
           }
           this.storeInfo = response.data;
+          this.activeList = this.storeInfo.partner_coupons == null||undefined||'' ? '' : this.storeInfo.partner_coupons.split(" ");
           if(response.data.partner_imgs){
-            for (var index in response.data.partner_imgs){
+            this.partnerImgs = [];
+            for (let index in response.data.partner_imgs){
               this.partnerImgs.push(this.fileHost + response.data.partner_imgs[index].pd_url);
             }
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
+          console.log(this.partnerImgs)
         });
       },
-      shopActive(){
-        let loading = new Loading();
-        loading.show();
-        this.$get(API.SHOP_COUPON_INFO).then((response)=>{
+      getstatus(){
+        this.$get(API.BUSINESS_STATUS).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
-            return;
-          }else if(response.code == 200){
-            if(response.data.coupons && response.data.coupons.length > 0){
-              this.$router.replace('./shopActiveList');
-            }else{
-              this.$router.replace('./shopActiveNothing');
-            }
+            return ;
+          }else {
+            this.storeStatus = response.business_status;
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
-        });
+        })
+      },
+      activeShow(){
+        if(this.isActivtShow){
+          this.isActivtShow = false;
+        }else{
+          this.isActivtShow = true;
+        }
       },
     },
-    mounted(){
-      this.getStoreInfo()
+    activated (){
+      this.getStoreInfo();
+      this.getstatus();
     },
     components:{
       TopHeader
@@ -150,7 +183,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 1.6rem 0 .55rem;
+    margin: 1.65rem 0 .55rem;
+    font-weight: 600;
   }
   .shop_home_title .img_warp{
     display: inline-block;
@@ -163,9 +197,21 @@
     width: 1.3rem;
     height: 1.3rem;
   }
+  /*   营业状态  */
+  .business_status{
+    text-align: center;
+    font-size: .36rem;
+    color: #f77357;
+    background-color: #fff4db;
+    border-radius: .15rem;
+    line-height: .8rem;
+    margin-bottom: .6rem;
+  }
   /*   活动提示  */
   .active{
-    margin-bottom: .6rem;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: .25rem;
   }
   .active span{
     display: inline-block;
@@ -173,12 +219,41 @@
     color: #999999;
   }
   .active .active_btn{
+    width: auto;
+    white-space:nowrap;
     padding: .07rem .2rem;
     font-size: .3rem;
     color: #ffffff;
-    background-color: #f1502f;
-    border-radius: 3px;
+    background: url('../assets/images/icon_storeManage_active_bg.png') no-repeat center;
+    background-size: cover;
+    border-radius: .3rem;
     margin-right: .27rem;
+  }
+  .active .active_info{
+    font-size: 0;
+    width: 75%;
+    height: .5rem;
+    overflow: hidden;
+    padding-top: .07rem;
+  }
+  .active .active_info_show{
+    height: auto!important;
+  }
+  .active .active_info span{
+    padding-right: .35rem;
+    padding-bottom: .26rem;
+  }
+  .active i{
+    display: inline-block;
+    width: .4rem;
+    height: .4rem;
+    margin-top: .07rem;
+    background: url("../assets/images/icon_active_arrow.png") no-repeat center;
+    background-size: contain;
+    transition: all .5s ease 0s;
+  }
+  .active .active_arrow_show{
+    transform: rotate(90deg);
   }
   /*  模块选择  */
   .shop_home_module{
@@ -212,6 +287,7 @@
     font-size: .5rem;
     color: $font_100;
     padding-left: .39rem;
+    font-weight: 600;
   }
   .info ul{
     width: 100%;
@@ -229,11 +305,26 @@
     width: .4rem;
     height: .4rem;
     margin-right: .16rem;
-    vertical-align: bottom;
+  }
+  .info_title_msg span{
+    vertical-align: middle;
   }
   .info_title_num{
     font-size: .42rem;
     color: $font_100;
     padding-top: .25rem;
+  }
+  .banner_contenr /deep/ .van-swipe{
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .van-swipe /deep/ .van-swipe__indicator{
+    background-color: $font_50;
+  }
+  .van-swipe /deep/ .van-swipe__indicator--active{
+    width: 8px;
+    height: 8px;
+    margin-top: -1px;
+    background-color: $font_100;
   }
 </style>

@@ -1,9 +1,14 @@
 <template>
   <div class="basic">
+    <div class="page_bg"></div>
     <top-header title-txt="经营信息"></top-header>
     <form class="content" onsubmit="return false">
       <div class="input_content">
         <ul class="input_box">
+          <li class="input_div">
+            <label>行业类别</label>
+            <input type="text" readonly v-model.trim="tradeName" >
+          </li>
           <li class="input_div">
               <label>经营地址</label>
               <input type="text" placeholder="输入经营地址" v-model.trim="formData.business_address" >
@@ -35,18 +40,17 @@
         </ul>
       </div>
       <p class="must_title"></p>
-      <span @click="submit" class="preserve_btn">保存</span>
+      <span @click="submit" :class="bottom_btn_style">保存</span>
     </form>
   </div>
 </template>
 
 <script>
-
   import TopHeader from '../../components/TopHeader'
   import Toast from '../../widget/Toast';
   import RadioButton from '../../components/common/RadioButton.vue'
   import * as API from '../../service/API'
-  import Loading from '../../widget/loading/loading'
+  import SuccessLoading from '../../widget/sucess_loading/SuccessLoading'
 
   export default {
     name: "ManageInfo",
@@ -54,6 +58,7 @@
         return {
             data:{},
             address: '',
+            tradeName:'',
             formData:{
                 business_address:"",
                 business_detail_address:"",
@@ -62,49 +67,51 @@
                 gross_interest_rate:"",
                 net_interest_rate:"",
                 other_manage_info:""
-            }
+            },
+          clientHeight:document.documentElement.clientHeight,
+          bottom_btn_style:'btn_fixed'
         }
       },
       created: function(){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.PARTNER_MANAGE_INFO).then((response)=>{
-            if(response.code == 500){
+            if(response.code != 200){
                 new Toast(response.msg).show();
                 return;
             }else if(response.code == 200){
                 this.data = response.data;
+                this.tradeName = response.tradeName;
                 this.formData = response.data
             }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
       },
       methods: {
-          submit: function () {
-            let loading = new Loading();
-            loading.show();
-              this.$post(API.PARTNER_MANAGE_INFO,this.formData).then((response)=>{
-                  if(response.code == 500){
-                      new Toast(response.msg).show();
-                      return;
-                  }else if(response.code == 200){
-
-                      this.data = response.data;
-                      new Toast(response.msg).show();
-                  }
-                loading.close();
-              }).then((error)=>{
-                loading.close();
-              });
+        resizeWindow(){
+          window.onresize = ()=>{
+            if(this.clientHeight>document.documentElement.clientHeight) {
+              this.bottom_btn_style = "btn_margin";
+            }else{
+              this.bottom_btn_style = "btn_fixed";
+            }
           }
+        },
+        submit: function () {
+            this.$post(API.PARTNER_MANAGE_INFO,this.formData).then((response)=>{
+                if(response.code != 200){
+                    new Toast(response.msg).show();
+                    return;
+                }else if(response.code == 200){
+                    this.data = response.data;
+                    new SuccessLoading(response.msg).show();
+                    this.$router.replace('/storeInfo');
+                }
+            });
+        }
       },
-    mounted() {
-      var screenHeigt = window.screen.availHeight;
-      var topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('basic')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('basic')[0].style.backgroundColor = '#eee';
+      mounted() {
+         this.resizeWindow();
+      },
+    destroyed(){
+      window.onresize = null
     },
     components: {TopHeader,RadioButton}
   }
@@ -114,4 +121,29 @@
   @import "../../style/common.scss";
   @import "../../style/public.scss";
   @import "../../style/storeInfo.scss";
+
+  /*提交按钮*/
+  .btn_fixed{
+    position: fixed;
+    bottom: 0;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
+  }
+
+  .btn_margin{
+    margin-top: -1.25rem;
+    display: block;
+    width: 100%;
+    line-height: 1.25rem;
+    font-size: .48rem;
+    color: white;
+    text-align: center;
+    background-color: #5FCCC6;
+  }
+
 </style>

@@ -1,73 +1,76 @@
 <template>
   <div class="basic">
-    <top-header title-txt="基本信息" father-right="编辑" @callBackRightClick="editBasic"></top-header>
-    <form class="content" onsubmit="return false">
-      <div class="input_content">
-        <ul class="input_box">
-          <li class="input_div">
-            <label>姓名</label>
-            <input readonly="readonly" v-model.trim="aTrueName" type="text">
-          </li>
-          <li class="input_div">
-            <label>身份证号</label>
-            <input readonly="readonly" v-model.trim="aIdentNo" type="text">
-          </li>
-          <li class="input_div">
-            <label>性别</label>
-            <input readonly="readonly" v-model.trim="sex"  type="text" placeholder="" value="" >
-          </li>
-          <li class="input_div">
-            <label>出生年月</label>
-            <input readonly="readonly"  v-model.trim="birthday" type="text">
-          </li>
-          <li class="input_div">
-            <label>年龄</label>
-            <input readonly="readonly" v-model.trim="age" type="text">
-          </li>
-          <li class="input_div" style="border: none;">
-            <label>婚姻状况</label>
-            <input readonly="readonly" v-model.trim="marital_status" type="text">
-          </li>
-          <li class="input_div">
-            <label>居住地址</label>
-            <input readonly="readonly" v-model.trim="address" type="text">
-          </li>
-          <li class="input_div">
-            <label>详细地址</label>
-            <input readonly="readonly" v-model.trim="live_address"  type="text">
-          </li>
-          <li class="input_div">
-            <label>住宅电话</label>
-            <input readonly="readonly" v-model.trim="home_phone" type="text">
-          </li>
-          <li class="input_div">
-            <label>电子邮箱</label>
-            <input readonly="readonly" v-model.trim="email" type="text">
-          </li>
-          <li class="input_div">
-            <label>教育程度</label>
-            <input readonly="readonly" v-model.trim="degree" type="text">
-          </li>
-          <li class="input_div">
-            <label>共同居住人</label>
-            <input readonly="readonly" v-model.trim="together_live_person"  type="text">
-          </li>
-        </ul>
-      </div>
-      <p class="must_title"></p>
-    </form>
+    <div class="page_bg"></div>
+    <top-header father-right='<i class="basicInformation_edit"></i>' @callBackRightClick="editBasic"></top-header>
+    <div class="basic_input_content">
+      <ul class="basic_input_box">
+        <li class="basic_info">
+          <span class="basic_age" v-text="age_marital_status" v-if="marital_status!=''&& marital_status!=null"></span>
+          <span class="basic_age" v-text="age" v-else=""></span>
+          <p class="basic_name">
+            <span v-text="aTrueName"></span>
+            <span v-text="sex"></span>
+          </p>
+        </li>
+        <li style="padding-top: .5rem;">
+          <p class="basic_title">
+            <img src="../../assets/images/icon_id_card.png" alt="">
+            <span>身份证号</span>
+          </p>
+          <p class="basic_input_info" v-text="aIdentNo"></p>
+        </li>
+        <li>
+          <p class="basic_title">
+            <img src="../../assets/images/icon_date_of_birth.png" alt="">
+            <span>出生日期</span>
+          </p>
+          <p class="basic_input_info" v-text="birthday"></p>
+        </li>
+        <li>
+          <p class="basic_title">
+            <img src="../../assets/images/icon_address.png" alt="">
+            <span>居住地址</span>
+          </p>
+          <p class="basic_input_info" v-text="detailed_residential_address"></p>
+        </li>
+        <li v-if="home_phone!=''&&home_phone!=null">
+          <p class="basic_title">
+            <img src="../../assets/images/icon_telephone.png" alt="">
+            <span>住宅电话</span>
+          </p>
+          <p class="basic_input_info" v-text="home_phone"></p>
+        </li>
+        <li v-if="email!=''&&email!=null">
+          <p class="basic_title">
+            <img src="../../assets/images/icon_email.png" alt="">
+            <span>电子邮箱</span>
+          </p>
+          <p class="basic_input_info" v-text="email"></p>
+        </li>
+        <li v-if="degree!=''&&degree!=null">
+          <p class="basic_title">
+            <img src="../../assets/images/icon_education_level.png" alt="">
+            <span>教育程度</span>
+          </p>
+          <p class="basic_input_info" v-text="degree"></p>
+        </li>
+        <li v-if="together_live_person!=''&&together_live_person!=null">
+          <p class="basic_title">
+            <img src="../../assets/images/icon_cohabitant.png" alt="">
+            <span>共同居住人</span>
+          </p>
+          <p class="basic_input_info" v-text="together_live_person"></p>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script>
-
   import TopHeader from '../../components/TopHeader'
   import RadioButton from '../../components/common/RadioButton.vue'
   import * as API from '../../service/API'
   import idCard from '../../utils/idCard'
-  import eventBus from  '../../utils/eventBus'
-  import Loading from '../../widget/loading/loading'
-
 
   export default {
     name: "BasicInfomation",
@@ -89,6 +92,8 @@
         email: '',
         degree: '',
         together_live_person: '',
+        detailed_residential_address:'',  //居住详细地址
+        age_marital_status:'',   //年纪+婚姻状况
       }
     },
     methods: {
@@ -96,23 +101,16 @@
         this.$router.push('/basicInformationEdit');
       },
       submit: function () {
-        let loading = new Loading();
-        loading.show();
         this.$post(API.PARTNER_BASE_INFO,this.formData).then((response)=>{
           if(response.code != 200){
-              new Toast(response.msg).show();
-              return;
+            new Toast(response.msg).show();
+            return;
           }else if(response.code == 200){
-              this.data = response.data
+            this.data = response.data
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         })
       },
       getData(){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.PARTNER_BASE_INFO).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
@@ -121,9 +119,8 @@
             this.aTrueName = response.data.aTrueName;
             this.aIdentNo = response.data.aIdentNo;
             this.age = idCard.getAgeByIdCard(response.data.aIdentNo);
-            this.sex = idCard.getSexByIdCard(response.data.aIdentNo);
+            this.sex = "("+idCard.getSexByIdCard(response.data.aIdentNo)+")";
             this.birthday = idCard.getBirthdayByIdCard(response.data.aIdentNo);
-
             this.marital_status = response.data.maritalStatus;
             this.provinces = response.data.aProvince;
             this.city = response.data.aCity;
@@ -134,18 +131,13 @@
             this.email = response.data.aiEmail;
             this.degree = response.data.degree;
             this.together_live_person = response.data.togetherLivePerson;
+            this.detailed_residential_address = this.address.replace(/\s*/g,"") + this.live_address;
+            this.age_marital_status = this.age+'_'+this.marital_status;
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         })
       }
     },
     mounted() {
-      var screenHeigt = window.screen.availHeight;
-      var topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('basic')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('basic')[0].style.backgroundColor = '#eee';
       this.getData();
     },
     components: {TopHeader,RadioButton}
@@ -155,16 +147,79 @@
 <style lang="scss" scoped>
   @import "../../style/common.scss";
   @import "../../style/public.scss";
-  @import "../../style/storeInfo.scss";
-  .radio_input{
-    display: flex;
-    justify-content: space-between;
+  .basic_input_content{
+    padding: 1.62rem .5rem 0;
+    background-color: white;
   }
-  .active{
+  .basic_input_box li{
+    padding: .35rem .35rem;
+  }
+  .basic_input_box li:last-child{
+    padding-bottom: .58rem;
+  }
+  .basic_input_box .basic_info{
+    position: relative;
+    padding: .51rem 0;
+    font-size: 0;
+    border-bottom: 1px solid #F1F1F1;
+  }
+  .basic_input_box .basic_info .basic_age,.basic_name{
     display: inline-block;
+  }
+  .basic_input_box .basic_info .basic_age{
+    width: 2.33rem;
+    height: .88rem;
+    border-radius: .5rem;
+    background-color: #FCB735;
+    color: white;
+    font-size: .4rem;
+    text-align: center;
+    line-height: .88rem;
+  }
+  .basic_input_box .basic_info .basic_name{
     position: absolute;
-    right: .5rem;
-    font-size: .48rem;
+    left: 2.66rem;
+    bottom: .56rem;
+  }
+  .basic_input_box .basic_info .basic_name span:first-child{
+    font-size: .6rem;
+    font-weight: 600;
     color: $font_100;
+  }
+  .basic_input_box .basic_info .basic_name span:last-child{
+    color: #999999;
+    font-size: .36rem;
+    padding-left: .1rem;
+  }
+  .basic_input_box li .basic_title{
+    font-size: 0;
+  }
+  .basic_input_box li .basic_title img{
+    width: .42rem;
+    height: .42rem;
+  }
+  .basic_input_box li .basic_title span{
+    color: #999999;
+    font-size: .36rem;
+    vertical-align: middle;
+    padding-left: .15rem;
+  }
+  .basic_input_box li .basic_input_info{
+    font-size: .45rem;
+    color: $font_100;
+    padding-top: .25rem;
+  }
+  .basic .common_header /deep/ .basicInformation_edit{
+    display: inline-block;
+    width: 1.61rem;
+    height: 1.61rem;
+    background: url("../../assets/images/icon_basicInformation_edit.png") no-repeat center;
+    background-size: cover;
+  }
+  .basic .common_header /deep/ .right{
+    padding-right: 0!important;
+  }
+  .basic .common_header{
+    border: none!important;
   }
 </style>

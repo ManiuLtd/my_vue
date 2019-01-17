@@ -24,7 +24,6 @@ const ShopList = r => require.ensure([], () => r(require('../page/ShopList')), '
 const ShopMsg = r => require.ensure([], () => r(require('../page/ShopMsg')), 'ShopMsg');
 const ShopMsgEdit = r => require.ensure([], () => r(require('../page/ShopMsgEdit')), 'ShopMsgEdit');
 const ShopActive = r => require.ensure([], () => r(require('../page/ShopActive')), 'ShopActive');
-const ShopActiveNothing = r => require.ensure([], () => r(require('../page/ShopActiveNothing')), 'ShopActiveNothing');   //  满减活动页面（无满减活动）
 const ShopActiveList = r => require.ensure([], () => r(require('../page/ShopActiveList')), 'ShopActiveList');   //  满减活动页面（满减活动列表）
 const ShopActiveEdit = r => require.ensure([], () => r(require('../page/ShopActiveEdit')), 'ShopActiveEdit');   //  编辑满减活动页面
 const ShopDb = r => require.ensure([], () => r(require('../page/ShopDistribution')), 'ShopDistribution');
@@ -70,14 +69,49 @@ const GoodDetails = r => require.ensure([], () => r(require('../page/GoodDetails
 const AddGoodSuccess = r => require.ensure([], () => r(require('../page/AddGoodSuccess')), 'AddGoodSuccess');  //商品添加成功页面
 const ProductInfo = r => require.ensure([], () => r(require('../page/StoreInfo/ProductInfo')), 'ProductInfo');  //商品信息
 const MineLoginPwd = r => require.ensure([], () => r(require('../page/MineLoginPwd')), 'MineLoginPwd');  //  我的 -- 设置登录密码页面
+const PayPassword = r => require.ensure([], () => r(require('../page/PayPassword')), 'PayPassword');  //  我的 -- 设置交易密码页面(有交易密码情况[修改]、[忘记])
+const PayPwdSet = r => require.ensure([], () => r(require('../page/PayPwdSet')), 'PayPwdSet');  //  我的 -- 设置交易密码页面(无交易密码情况)
+const PayPwdSetInput = r => require.ensure([], () => r(require('../page/PayPwdSetInput')), 'PayPwdSetInput');  //  我的 -- 修改交易密码输入框
+const PayPwdReviseInput = r => require.ensure([], () => r(require('../page/PayPwdReviseInput')), 'PayPwdReviseInput');  //  我的 -- 设置交易密码输入框
+const TradePwd = r => require.ensure([], () => r(require('../page/TradePwd')), 'TradePwd');  //  我的 -- 修改交易密码页面
+const WithdrawalsTip = r => require.ensure([], () => r(require('../page/WithdrawalsTip')), 'WithdrawalsTip');  //  我的钱包 -- 提现成功页面
+const BaiduAddress = r => require.ensure([], () => r(require('../page/BaiduAddress')), 'BaiduAddress');  //  搜索位置页面
+const Wallet = r => require.ensure([], () => r(require('../page/Wallet')), 'Wallet');  //  我的钱包
+const BillingRecord = r => require.ensure([], () => r(require('../page/BillingRecord')), 'BillingRecord');  // 交易明细
+const Withdraw = r => require.ensure([], () => r(require('../page/Withdraw')), 'Withdraw');  // 提现
+const Feedback = r => require.ensure([], () => r(require('../page/Feedback')), 'Feedback');  // 帮助与反馈
+const Promotion = r => require.ensure([], () => r(require('../page/Promotion')), 'Promotion');  // 推广赚现金
+const AddBankCard = r => require.ensure([], () => r(require('../page/AddBankCard')), 'AddBankCard');  // 添加银行卡
+const BankCardActivate = r => require.ensure([], () => r(require('../page/BankCardActivate')), 'BankCardActivate');  // 激活银行卡
+const AddBankCardVeri = r => require.ensure([], () => r(require('../page/AddBankCardVeri')), 'AddBankCardVeri');  // 添加银行卡
+const AddBankCardSuccess = r => require.ensure([], () => r(require('../page/AddBankCardSuccess')), 'AddBankCardSuccess');  // 添加银行卡成功
+const MemberManagement = r => require.ensure([], () => r(require('../page/MemberManagement')), 'MemberManagement');  // 会员管理
+const CashBenefit = r => require.ensure([], () => r(require('../page/CashBenefit')), 'CashBenefit');  // 现金福利
+const ProductAttribute = r => require.ensure([], () => r(require('../page/ProductAttribute')), 'ProductAttribute');  // 现金福利
+const ProductSpec = r => require.ensure([], () => r(require('../page/ProductSpec')), 'ProductSpec');  // 商品规格
 //  协议部分
 const RegisterAgreement = r => require.ensure([], () => r(require('../page/Arguments/RegisterAgreement')), 'RegisterAgreement');  //注册服务协议
- const GoodsRelease = r => require.ensure([], () => r(require('../page/Arguments/GoodsRelease')), 'GoodsRelease');  //注册服务协议
+const GoodsRelease = r => require.ensure([], () => r(require('../page/Arguments/GoodsRelease')), 'GoodsRelease');  //注册服务协议
+const StoreService = r => require.ensure([], () => r(require('../page/Arguments/StoreService')), 'StoreService');  //开店服务协议
+const CooperativeBank = r => require.ensure([], () => r(require('../page/CooperativeBank')), 'CooperativeBank');  //开店服务协议
+const QuickPayment = r => require.ensure([], () => r(require('../page/Arguments/QuickPayment')), 'QuickPayment');  //开店服务协议
 
 
 Vue.use(Router)
 
+let scrollBehavior = function scrollBehavior(to, from, savedPosition) {
+  if (savedPosition) {
+    return savedPosition
+  } else {
+    if (from.meta.keepAlive) {
+      from.meta.savedPosition = document.body.scrollTop
+    }
+    return {x: 0, y: to.meta.savedPosition || 0}
+  }
+}
+
 export default new Router({
+  scrollBehavior,
   routes: [
     {
       path: '/',
@@ -85,310 +119,406 @@ export default new Router({
     },
     {
       path: '/login',
-      component: Login
+      component: Login,
+      meta: {rank: 1}
     },
     {
-      path:'/register',
-      component:Register
+      path: '/register',
+      component: Register,
+      meta: {keepAlive: true}
     },
     {
       path: '/forgetPwd',
-      component:ForgetPwd
+      component: ForgetPwd
     },
     {
-      path:'/main',
-      component:Main,
+      path: '/main',
+      component: Main,
+      meta: {keepAlive: true},
       children: [
-      {
-        path:'/',
-        component:Home,
-        meta: { keepAlive: true },
-      },
-      {
-        path: 'home', //食品详情页
-        name:'home',
-        component: Home,
-        meta: { keepAlive: true }
-      },
-      {
-        path:'order',
-        name:'order',
-        component:Order,
-        meta: { keepAlive: true }
-      },
-      {
-        path:'mine',
-        name:'mine',
-        component:Mine,
-        meta: { keepAlive: true }
-      }],
+        {
+          path: '/',
+          component: Home,
+          meta: {keepAlive: true},
+        },
+        {
+          path: 'home', //食品详情页
+          name: 'home',
+          component: Home,
+          meta: {keepAlive: true}
+        },
+        {
+          path: 'order',
+          name: 'order',
+          component: Order,
+          meta: {keepAlive: true}
+        },
+        {
+          path: 'mine',
+          name: 'mine',
+          component: Mine,
+          meta: {keepAlive: true}
+        }],
     },
     {
-      path:'/inviteCode',
-      component:InviteCode
+      path: '/dataStatistics',
+      component: DataStatistics,
+      meta: {keepAlive: true}
     },
     {
-      path:'/dataStatistics',
-      component:DataStatistics,
-      meta: { keepAlive: true }
+      path: '/storeManage',
+      component: StoreManage,
+      meta: {keepAlive: true}
     },
     {
-      path:'/storeManage',
-      component:StoreManage
-    },
-    {
-      path:'/category',
-      name:'category',
-      component:Category,
+      path: '/category',
+      name: 'category',
+      component: Category,
       //meta: { keepAlive: true }
     },
     {
-      path:'/brand',
-      component:Brand
+      path: '/brand/:id',
+      component: Brand,
+      meta: {keepAlive: true}
     },
     {
-      path:'/trade',
-      component:Trade
+      path: '/trade',
+      component: Trade
     },
     {
-      path:'/goodsCat',
-      component:GoodsCat
+      path: '/goodsCat',
+      component: GoodsCat
     },
     {
-      path:'/spec/:id',
-      component:Spec,
-      meta: { keepAlive: true ,rank:8}
+      path: '/spec/:id',
+      component: Spec,
+      meta: {keepAlive: true}
     },
     {
-      path:'/specEdit/:id',
-      component:SpecEdit,
-      meta: { keepAlive: true ,rank:9}
+      path: '/specEdit/:id',
+      component: SpecEdit,
     },
     {
-      path:'/shopList',
-      name:'shopList',
-      component:ShopList,
-      meta: { rank:1}
+      path: '/shopList',
+      name: 'shopList',
+      component: ShopList,
     },
     {
-      path:'/shopMsg',
-      component:ShopMsg
+      path: '/shopMsg',
+      component: ShopMsg,
+      meta: {rank: 1}
     },
     {
-      path:'/shopMsgEdit',
-      component:ShopMsgEdit,
-      meta: { keepAlive: true }
+      path: '/shopMsgEdit',
+      component: ShopMsgEdit,
+      meta: {keepAlive: true}
     },
     {
-      path:'/shopDb',
-      component:ShopDb,
-      meta: { keepAlive: true }
+      path: '/shopDb',
+      component: ShopDb,
+      meta: {keepAlive: true}
     },
     {
-      path:'/shopDbTime',
-      component:ShopDbTime
+      path: '/shopDbTime',
+      component: ShopDbTime
     },
     {
-      path:'/addProduct',
-      component:AddProduct
+      path: '/addProduct',
+      component: AddProduct
     },
     {
-      path:'/addGoods',
-      component:AddGoods,
-      meta: { keepAlive: true,rank:2}
+      path: '/addGoods',
+      component: AddGoods,
+      meta: {keepAlive: true, isRefresh: false}
     },
     {
-      path:'/goodsEdit/:id',
-      component:GoodsEdit,
-      meta: { keepAlive: true }
+      path: '/goodsEdit/:id',
+      component: GoodsEdit,
+      meta: {keepAlive: true}
     },
     {
-      path:'/shopActive',
-      component:ShopActive
+      path: '/shopActive',
+      component: ShopActive
     },
     {
-      path:'/shopActiveNothing',
-      component:ShopActiveNothing
+      path: '/shopActiveList',
+      component: ShopActiveList
     },
     {
-      path:'/shopActiveList',
-      component:ShopActiveList
+      path: '/shopActiveEdit',
+      component: ShopActiveEdit
     },
     {
-      path:'/shopActiveEdit',
-      component:ShopActiveEdit
+      path: '/shopMsg',
+      component: ShopMsg
     },
     {
-      path:'/shopMsg',
-      component:ShopMsg
+      path: '/addShopSuccess',
+      component: AddShopSuccess
     },
     {
-      path:'/addShopSuccess',
-      component:AddShopSuccess
+      path: '/storeInfo',
+      component: StoreInfo,
+      meta: {keepAlive: true}
     },
     {
-      path:'/storeInfo',
-      component:StoreInfo
+      path: '/registerSuccess/:phone',
+      component: RegisterSuccess,
     },
     {
-      path:'/registerSuccess',
-      component:RegisterSuccess,
-      meta: { keepAlive: true }
+      path: '/storeCertification',
+      component: StoreCertification,
+      meta: {keepAlive: true}
     },
     {
-      path:'/storeCertification',
-      component:StoreCertification,
-      meta: { keepAlive: true }
+      path: '/reviewProcessing',
+      component: ReviewProcessing
     },
     {
-      path:'/reviewProcessing',
-      component:ReviewProcessing
+      path: '/messageCenter',
+      component: MessageCenter
     },
     {
-      path:'/messageCenter',
-      component:MessageCenter
+      path: '/setting',
+      component: Setting,
+      meta: {keepAlive: true}
     },
     {
-      path:'/setting',
-      component:Setting
+      path: '/storeCode',
+      component: StoreCode
     },
     {
-      path:'/storeCode',
-      component:StoreCode
+      path: '/dataStatisticsSelectTime/:id',
+      component: DataStatisticsSelectTime
     },
     {
-      path:'/dataStatisticsSelectTime/:id',
-      component:DataStatisticsSelectTime
+      path: '/basicInformation',
+      component: BasicInformation,
+      meta: {rank: 1}
     },
     {
-      path:'/basicInformation',
-      component:BasicInformation
+      path: '/basicInformationEdit',
+      component: BasicInformationEdit,
     },
     {
-      path:'/basicInformationEdit',
-      component:BasicInformationEdit,
-      meta: { keepAlive: true }
+      path: '/assetInfo',
+      component: AssetInfo
     },
     {
-      path:'/assetInfo',
-      component:AssetInfo
+      path: '/acceptInfo',
+      component: AcceptInfo
     },
     {
-      path:'/acceptInfo',
-      component:AcceptInfo
+      path: '/contactInfo',
+      component: ContactInfo
     },
     {
-      path:'/contactInfo',
-      component:ContactInfo
+      path: '/editContactInfo',
+      component: EditContactInfo
     },
     {
-      path:'/editContactInfo',
-      component:EditContactInfo
+      path: '/contactList',
+      component: ContactList
     },
     {
-      path:'/contactList',
-      component:ContactList
+      path: '/contactDetails',
+      component: ContactDetails
     },
     {
-      path:'/contactDetails',
-      component:ContactDetails
+      path: '/contactNothing',
+      component: ContactNothing
     },
     {
-      path:'/contactNothing',
-      component:ContactNothing
+      path: '/loanInfo',
+      component: LoanInfo
     },
     {
-      path:'/loanInfo',
-      component:LoanInfo
+      path: '/manageInfo',
+      component: ManageInfo
     },
     {
-      path:'/manageInfo',
-      component:ManageInfo
+      path: '/uploadData',
+      component: UploadData
     },
     {
-      path:'/uploadData',
-      component:UploadData
+      path: '/uploadDataEdit',
+      component: UploadDataEdit
     },
     {
-      path:'/uploadDataEdit',
-      component:UploadDataEdit
+      path: '/certification',
+      component: Certification,
+      meta: {keepAlive: true}
     },
     {
-      path:'/propertyInfo',
-      component:PropertyInfo
+      path: '/bankCardManage',
+      component: BankCardManage,
+      meta: {keepAlive: true}
     },
     {
-      path:'/certification',
-      component:Certification
+      path: '/orderDetails/:id',
+      component: OrderDetails,
+      meta: {keepAlive: true}
     },
     {
-      path:'/bankCardManage',
-      component:BankCardManage
+      path: '/orderDetailsRemarks/:id',
+      component: OrderDetailsRemarks
     },
     {
-      path:'/orderDetails/:id',
-      component:OrderDetails
+      path: '/address',
+      component: Address
     },
     {
-      path:'/orderDetailsRemarks/:id',
-      component:OrderDetailsRemarks
+      path: '/reviewSuccess',
+      component: ReviewSuccess,
+      meta: {rank: 1}
     },
     {
-      path:'/address',
-      component:Address
+      path: '/createStore',
+      component: CreateStore,
+      meta: {keepAlive: true, rank: 10}
     },
     {
-      path:'/reviewSuccess',
-      component:ReviewSuccess,
-      meta: { keepAlive: true }
+      path: '/loginSuccess',
+      component: LoginSuccess,
     },
     {
-      path:'/createStore',
-      component:CreateStore,
-      meta: { keepAlive: true }
+      path: '/reviewFailure',
+      component: ReviewFailure,
+      meta: {rank: 1}
     },
     {
-      path:'/loginSuccess',
-      component:LoginSuccess,
-      meta: { keepAlive: true }
+      path: '/reviewRefuse',
+      component: ReviewRefuse,
+      meta: {rank: 1}
     },
     {
-      path:'/reviewFailure',
-      component:ReviewFailure,
-      meta: { keepAlive: true }
+      path: '/orderTrack/:id',
+      component: OrderTrack
     },
     {
-      path:'/reviewRefuse',
-      component:ReviewRefuse,
-      meta: { keepAlive: true }
+      path: '/goodDetails/:id',
+      component: GoodDetails
     },
     {
-      path:'/orderTrack/:id',
-      component:OrderTrack
+      path: '/addGoodSuccess',
+      component: AddGoodSuccess
     },
     {
-      path:'/goodDetails/:id',
-      component:GoodDetails
+      path: '/productInfo',
+      component: ProductInfo
     },
     {
-      path:'/addGoodSuccess',
-      component:AddGoodSuccess
+      path: '/mineLoginPwd',
+      component: MineLoginPwd
     },
     {
-      path:'/productInfo',
-      component:ProductInfo
+      path: '/payPassword',
+      component: PayPassword
     },
     {
-      path:'/mineLoginPwd',
-      component:MineLoginPwd
+      path: '/payPwdSet',
+      name:'payPwdSet',
+      component: PayPwdSet
     },
     {
-      path:'/registerAgreement',
-      component:RegisterAgreement
+      path: '/payPwdSetInput',
+      name:'payPwdSetInput',
+      component: PayPwdSetInput
     },
     {
-      path:'/goodsRelease',
-      component:GoodsRelease
+      path: '/payPwdReviseInput',
+      component: PayPwdReviseInput
+    },
+    {
+      path: '/tradePwd',
+      component: TradePwd
+    },
+    {
+      path: '/withdrawalsTip',
+      component: WithdrawalsTip
+    },
+    {
+      path: '/registerAgreement',
+      component: RegisterAgreement
+    },
+    {
+      path: '/goodsRelease',
+      component: GoodsRelease
+    },
+    {
+      path: '/storeService',
+      component: StoreService
+    },
+    {
+      path: '/baiduAddress',
+      component: BaiduAddress,
+    },
+    {
+      path: '/wallet',
+      component: Wallet,
+    },
+    {
+      path: '/billingRecord',
+      component: BillingRecord
+    },
+    {
+      path: '/withdraw',
+      component: Withdraw
+    },
+    {
+      path: '/feedback',
+      component: Feedback
+    },
+    {
+      path: '/promotion',
+      component: Promotion
+    },
+    {
+      path: '/addBankCard',
+      name:'addBankCard',
+      component: AddBankCard,
+      meta:{keepAlive:true}
+    },
+    {
+      path: '/bankCardActivate',
+      name:'bankCardActivate',
+      component: BankCardActivate,
+      meta:{keepAlive:true}
+    },
+    {
+      path: '/addBankCardVeri',
+      name:'addBankCardVeri',
+      component: AddBankCardVeri
+    },
+    {
+      path: '/addBankCardSuccess',
+      component: AddBankCardSuccess
+    },
+    {
+      path: '/memberManagement',
+      component: MemberManagement
+    },
+    {
+      path: '/cashBenefit',
+      component: CashBenefit
+    },
+    {
+      path: '/productAttribute',
+      name: 'productAttribute',
+      component: ProductAttribute
+    },
+    {
+      path: '/productSpec',
+      name:'productSpec',
+      component: ProductSpec
+    },
+    {
+      path: '/cooperativeBank',
+      component: CooperativeBank
+    },
+    {
+      path: '/quickPayment',
+      component: QuickPayment
     }
   ]
 })

@@ -188,7 +188,7 @@
     color: #4cc3ad;
     padding-left: .3rem;
   }
-  /*  减满活动 */
+  /*  满减活动 */
   .active{
     position: relative;
     padding: .6rem 1.15rem;

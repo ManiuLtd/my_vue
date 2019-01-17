@@ -1,5 +1,6 @@
 <template>
   <div class="shop_create_content">
+    <div class="page_bg"></div>
     <top-header title-txt="上传资料" father-right="编辑" @callBackRightClick="backUpload"></top-header>
       <div class="input_content">
         <ul class="input_box">
@@ -25,7 +26,6 @@
   import * as API from '../../service/API';
   import Toast from '../../widget/Toast'
   import LocalStorageUtils from '../../utils/LocalStorageUtils';
-  import Loading from '../../widget/loading/loading'
 
   export default {
 	data(){
@@ -38,8 +38,6 @@
 	  }
 	},
 	created: function(){
-    let loading = new Loading();
-    loading.show();
 	  this.$get(API.PARTNER_DATURM_INFO).then((response)=>{
         if(response.code != 200){
           new Toast(response.msg).show();
@@ -53,9 +51,7 @@
           }
           console.log(this.formData)
         }
-      loading.close();
 	  }).then((error)=>{
-      loading.close();
     });
 	},
 	methods: {
@@ -63,8 +59,6 @@
         this.$router.push('/uploadDataEdit');
 	  },
 	  submit: function () {
-      let loading = new Loading();
-      loading.show();
         let lowestFreighArr=this.formData.lowestFreigh.split(",");
         this.formData.lowestFreightDistance = lowestFreighArr[0];
         this.formData.lowestFreightMoney = lowestFreighArr[1];
@@ -79,17 +73,11 @@
             new Toast(response.msg).show();
             this.data = response.data
           }
-          loading.close();
         }).then((error)=>{
-          loading.close();
         });
 	  }
 	},
     mounted() {
-      let screenHeigt = window.screen.availHeight;
-      let topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('shop_create_content')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('shop_create_content')[0].style.backgroundColor = '#eee';
       this.fileHost = process.env.ALY_IMG_URL;
     },
     components: {TopHeader}
@@ -98,11 +86,7 @@
 <style lang="scss" scoped>
   @import "../../style/common.scss";
   @import "../../style/public.scss";
-  .shop_create_content{
-    margin-top: 1.62rem;
-    background-color: #eee;
-  }
-
+  
   /*  必填提示  */
   .must_title{
     font-size: .36rem;
@@ -116,6 +100,7 @@
   /*  隐藏的信息盒子  */
   .input_content{
     margin-bottom: .2rem;
+    padding-top: 1.62rem;;
   }
 
   /** 图片上传*/
@@ -123,9 +108,10 @@
     display: flex;
     background-color: white;
     border-bottom: 1px solid #eeeeee;
-    padding: 0.55rem 0.51rem;
+    padding: 0.52rem 0.51rem;
   }
   .input_img label{
+    margin-top: 0.3rem;
     width: 30%;
   }
   /*资料显示的地方*/
@@ -133,6 +119,7 @@
     width: 1.9rem;
     height: 1.9rem;
     margin-right: .3rem;
+    padding-top: .3rem;
   }
 </style>
 

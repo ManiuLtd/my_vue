@@ -76,6 +76,7 @@
     position: relative;
     background: white;
     border-radius: 5px;
+    overflow: hidden;
   }
   .qr_img .qr_bar{
     width: 100%;

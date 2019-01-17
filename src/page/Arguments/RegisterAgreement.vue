@@ -1,7 +1,7 @@
 <template>
     <div>
       <top-header title-txt="注册服务协议"></top-header>
-      <div class="box">
+      <div class="agreement_box">
         <div class="agreement_content">
           <div class="licence">
             <h2 class="head_title">青松云商APP注册使用协议</h2>
@@ -156,6 +156,10 @@
     export default {
       data() {
           return {};
+      },
+      beforeRouteLeave (to, from, next) {
+        this.$route.meta.keepAlive = true;
+        next();
       },
       components:{TopHeader}
     }

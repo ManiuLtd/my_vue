@@ -1,6 +1,7 @@
 <template>
   <div class="shop_create_content">
-    <top-header title-txt="基本信息" father-right="编辑" @callBackRightClick="editMsg"></top-header>
+    <div class="page_bg"></div>
+    <top-header title-txt="基本信息" father-right="编辑" @callBackRightClick="editMsg" frouter="/storeManage"></top-header>
     <form id="shopMsg" class="content" onsubmit="return false">
       <div class="input_content">
         <ul class="input_box">
@@ -38,7 +39,6 @@
   import TopHeader from '../components/TopHeader'
   import * as API from '../service/API'
   import eventBus from  '../utils/eventBus'
-  import Loading from '../widget/loading/loading'
 
   export default {
       data(){
@@ -62,13 +62,15 @@
             shopImage:[],     //  店铺图片存放处
           }
       },
+      beforeRouteLeave (to, from, next) {
+        this.$store.dispatch('setIsRefresh',true);
+        next();
+      },
       methods: {
         editMsg(){
           this.$router.push('/shopMsgEdit');
         },
         submit: function () {
-          let loading = new Loading();
-          loading.show();
             this.$post(API.SHOP_BASE_INFO,this.formData).then((response)=>{
                 if(response.code != 200){
                     new Toast(response.msg).show();
@@ -76,22 +78,15 @@
                 }else if(response.code == 200){
                     this.data = response.data
                 }
-              loading.close();
-            }).then((error)=>{
-              loading.close();
-            });
+            })
         },
         getAddressData(data){
-          console.log(data);
           this.address = data.name;
-            this.formData.provinces = data.provinces;
-            this.formData.city = data.city;
-            this.formData.area = data.area;
-            console.log(data)
+          this.formData.provinces = data.provinces;
+          this.formData.city = data.city;
+          this.formData.area = data.area;
         },
         getDate(){
-          let loading = new Loading();
-          loading.show();
             this.$get(API.SHOP_BASE_INFO).then((response)=>{
                 if(response.code != 200){
                     new Toast(response.msg).show();
@@ -112,21 +107,11 @@
                   if(this.data.partner_daturm.c){
                     this.shopImage = this.data.partner_daturm.c;
                   }
-                  console.log(this.data);
-                  console.log(this.shopImage);
-                  console.log(this.LogoImage);
                 }
-              loading.close();
-            }).then((error)=>{
-              loading.close();
-            });
+            })
         }
       },
     mounted () {
-      var screenHeigt = window.screen.availHeight;
-      var topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('shop_create_content')[0].style.minHeight=screenHeigt-topHeight+'px';
-      document.getElementsByClassName('shop_create_content')[0].style.backgroundColor='#eee';
       this.fileHost = process.env.ALY_IMG_URL;
       this.getDate();
       eventBus.$on('getAddress',this.getAddressData);
@@ -157,6 +142,6 @@
   .image_warp img{
     width: 100%;
     height: 100%;
-    border-radius: 5px;
+    border-radius: 8px;
   }
 </style>

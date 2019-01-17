@@ -18,8 +18,6 @@
 <script>
   import TopHeader from '../components/TopHeader'
   import * as API from '../service/API';
-  import Loading from '../widget/loading/loading'
-
 
   export default {
     data(){
@@ -32,8 +30,6 @@
     },
     methods:{
        getOrderData(){
-         let loading = new Loading();
-         loading.show();
          let orderId = this.$route.params.id;
          let requestUrl = API.BASEURL + `/order/detail/${orderId}.html`;
          this.$get(requestUrl).then((res)=>{
@@ -42,9 +38,6 @@
              return ;
            }
            this.orderData = res.logList;
-           loading.close();
-         }).then((error)=>{
-           loading.close();
          });
        },
     },
@@ -93,6 +86,8 @@
   ul .title_p1{
     font-size: .45rem;
     color: #4a4d5e;
+    word-wrap: break-word;
+    margin-bottom: .2rem;
   }
   ul .title_p2{
     font-size: .36rem;

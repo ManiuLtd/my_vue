@@ -1,12 +1,10 @@
 <template>
   <div class="shop_create_content">
-    <top-header title-txt="添加规格"></top-header>
+    <div class="page_bg"></div>
+    <top-header :title-txt="(specId > 0?'编辑':'添加')+'规格'"></top-header>
     <form class="content">
       <div class="input_content">
         <ul class="input_box">
-          <li class="title_bar" >
-            <p>规格</p>
-          </li>
           <li class="input_div list_btn">
             <p><span class="must">*</span>规格类型</p>
             <span class="btn_type" :class="{check_btn : specType == 1}" @click="specType = 1">重量</span>
@@ -36,7 +34,7 @@
         </ul>
       </div>
       <p class="must_title"><span class="must">*</span>为必填项</p>
-      <span class="preserve_btn" @click="saveSpec">保存</span>
+      <span class="save_btn" @click="saveSpec">保存</span>
     </form>
   </div>
 </template>
@@ -45,7 +43,6 @@
   import * as API from '../service/API';
   import Toast from '../widget/Toast';
   import eventBus from  '../utils/eventBus'
-  import Loading from '../widget/loading/loading'
 
   export default {
     data() {
@@ -57,14 +54,10 @@
         gn_price:'',  //单价
         gn_stock:'',  //剩余库存值
         gn_stock_remind:'', //库存值提醒
+        clientHeight:document.documentElement.clientHeight,  //可见区域的高
       };
     },
     mounted() {
-      let screenHeigt = window.screen.availHeight;
-      let topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-      document.getElementsByClassName('shop_create_content')[0].style.minHeight = screenHeigt - topHeight + 'px';
-      document.getElementsByClassName('shop_create_content')[0].style.backgroundColor = '#eee';
-      //eventBus.$on('spec',this.getSpecInfo);
       this.getSpecInfo();
     },
     methods:{
@@ -95,8 +88,6 @@
         data.gn_stock = this.gn_stock;
         data.gn_id = this.gn_id;
         data.gn_stock_remind = this.gn_stock_remind;
-        let loading = new Loading();
-        loading.show();
         this.$post(API.GOODS_EDIT_SPEC_PRICE,data).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
@@ -105,10 +96,8 @@
           let specData = response.data;
           specData.gn_spec_type = data.gn_spec_type;
           eventBus.$emit('specDetail',specData);
+          eventBus.$emit('specData',specData);
           this.$router.go(-1);
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
       },
       verification(){
@@ -135,6 +124,18 @@
 </script>
 <style lang="scss" scoped>
   @import "../style/createStore.scss";
+  .shop_create_content{
+    .save_btn{
+      margin-top: 0.66rem;
+      display: block;
+      width: 100%;
+      line-height: 1.25rem;
+      font-size: .48rem;
+      color: white;
+      text-align: center;
+      background-color: #5FCCC6;
+    }
+  }
   /****title_bar*****/
   .title_bar {
     height: 1rem;

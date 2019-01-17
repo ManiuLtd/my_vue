@@ -8,38 +8,35 @@
     <transition>
       <router-view v-if="!$route.meta.keepAlive"></router-view>
     </transition>
-    <tab-bottom hid-show="tabBottomShow"></tab-bottom>
+    <tab-bottom :isHidden="showTab"></tab-bottom>
   </div>
-
 </template>
 
 <script>
     import TabBottom from '../components/TabBottom'
-    import eventBus from  '../utils/eventBus'
+
     export default {
       data(){
-        return{
-          tabBottomShow:''
+        return {
+          clientHeight:document.documentElement.clientHeight,
+          showTab: true,  // 控制按钮盒子显示隐藏
         }
       },
-      created(){
-        eventBus.$on("bottomShop",this.getShow);
-      },
-      mounted(){
-        let screenHeigt = window.screen.availHeight;
-        if(document.getElementsByClassName('orderContent')[0]){
-        document.getElementsByClassName('orderContent')[0].style.minHeight = screenHeigt + 'px';
+      activated(){
+        window.onresize= ()=>{
+          if(this.clientHeight>document.documentElement.clientHeight) {
+            this.showTab =false
+          }else{
+            this.showTab = true
+          }
         }
-
+      },
+      deactivated(){
+        window.onresize = null;
       },
       components:{
         TabBottom
       },
-      methods:{
-        getShow(n){
-          this.tabBottomShow = n;
-        }
-      }
     }
 </script>
 

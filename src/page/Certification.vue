@@ -1,15 +1,17 @@
 <template>
     <div class="basic">
+      <div class="page_bg"></div>
       <top-header></top-header>
+      <div style="height: 1.61rem;"></div>
       <div class="top_bg"></div>
       <div class="items">
         <div class="info">
           <img class="logo" src="../assets/images/icon_name.png"/>
-          <span class="detail">姓名：{{userInfo.aTrueName}}</span>
+          <span class="detail">姓名：{{userInfo.truename}}</span>
         </div>
         <div class="info">
           <img class="logo" src="../assets/images/icon_id_num.png"/>
-          <span class="detail">身份证号：{{userInfo.aIdentNo}}</span>
+          <span class="detail">身份证号：{{userInfo.identno}}</span>
         </div>
       </div>
       <span class="tips">提示：若修改认证类型，请联系您的客户经理。</span>
@@ -18,8 +20,9 @@
 
 <script>
 
-  import LocalStorageUtils from '../utils/LocalStorageUtils';
   import TopHeader from '../components/TopHeader'
+  import * as API from '../service/API';
+  import Toast from '../widget/Toast';
 
     export default {
       data(){
@@ -28,21 +31,21 @@
         }
       },
       methods:{
-        setData(){
-          let localStorageUtils = new LocalStorageUtils();
-          this.userInfo = JSON.parse(localStorageUtils.getStore('userInfo'));
+        getStoreInfo(){
+          this.$get(API.PARTNER_INFO).then((response)=>{
+              if(response.code == 200){
+              this.userInfo = response.data;
+            }else{
+              new Toast(response.msg);
+
+            }
+          });
         },
-        setBg(){
-          let screenHeigt = window.screen.availHeight;
-          let topHeight = document.getElementsByClassName('common_header')[0].offsetHeight;
-          document.getElementsByClassName('basic')[0].style.minHeight = screenHeigt - topHeight + 'px';
-          document.getElementsByClassName('basic')[0].style.backgroundColor = '#eee';
-        }
       },
-      mounted() {
-        this.setBg();
-        this.setData();
+      activated(){
+        this.getStoreInfo();
       },
+      mounted() {},
       components:{
         TopHeader
       }
@@ -51,7 +54,6 @@
 
 <style lang="scss" scoped>
   .top_bg{
-    margin-top: 1.61rem;
     width: 100%;
     height: 6.55rem;
     background: url("../assets/images/icon_certification.jpg") no-repeat;

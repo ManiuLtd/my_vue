@@ -21,7 +21,7 @@ axios.interceptors.request.use(
       showFullScreenLoading()
     }
     config.headers['Content-Type'] = 'application/x-www-form-urlencoded',
-      config.headers['Accept'] = 'application/json'
+    config.headers['Accept'] = 'application/json'
 
     return config;
   },
@@ -38,7 +38,7 @@ axios.interceptors.response.use(
   },
   err => {
     tryHideFullScreenLoading();
-    if (err && err.response) {
+    if(err && err.response){
       switch (err.response.status) {
         case 400:
           console.log('错误请求')
@@ -50,7 +50,7 @@ axios.interceptors.response.use(
             router.replace({
               path: '/login'
             })
-          }, 3000)
+          },3000)
           console.log('未授权，请重新登录')
           break;
         case 403:
@@ -85,7 +85,7 @@ axios.interceptors.response.use(
           break;
         default:
           console.log(`连接错误${err.response.status}`)
-      }
+    }
     } else {
       console.log("Server connection failed...");
     }
@@ -99,13 +99,13 @@ axios.interceptors.response.use(
  * @param params
  * return {promise}
  * */
-export function get(url, params = {}, data = null) {
-  return new Promise((resolve, reject) => {
-    if (data) {
-      url += '?' + qs.stringify(data);
+export function get(url, params = {},data = null) {
+  return new Promise((resolve,reject) => {
+    if(data){
+      url += '?'+qs.stringify(data);
     }
-    axios.get(url, {
-      params: params
+    axios.get(url,{
+      params:params
     }).then(response => {
       resolve(response.data);
     }).catch(error => {
@@ -121,10 +121,10 @@ export function get(url, params = {}, data = null) {
  * return {promise}
  * */
 export function post(url, data = {}) {
-  return new Promise((resolve, reject) => {
-    axios.post(url, qs.stringify(data)).then(response => {
+  return new Promise((resolve,reject) => {
+    axios.post(url,qs.stringify(data)).then(response => {
       resolve(response.data);
-    }, error => {
+    },error => {
       reject(error);
     })
   })
@@ -165,11 +165,11 @@ export function tryHideFullScreenLoading() {
  * return {promise}
  * */
 export function postImg(url, data = {}) {
-  return new Promise((resolve, reject) => {
-    let md5Date = md5(new DateUtils().formatDate(new Date(), 'yyyy-MM-dd'));
-    axios.post(url, qs.stringify(data), { headers: { 'Authorization': md5Date }, timeout: 600000 }).then(response => {
+  return new Promise((resolve,reject) => {
+    let md5Date = md5(new DateUtils().formatDate(new Date(),'yyyy-MM-dd'));
+    axios.post(url,qs.stringify(data),{headers:{'Authorization': md5Date},timeout:600000}).then(response => {
       resolve(response.data);
-    }, error => {
+    },error => {
       reject(error);
     })
   })

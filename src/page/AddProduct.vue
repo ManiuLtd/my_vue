@@ -1,7 +1,7 @@
 <template>
   <div>
     <!--  顶部header begin  -->
-    <top-header title-txt="添加商品"></top-header>
+    <top-header title-txt="商品列表" frouter='/main/home'></top-header>
     <router-link to="/addGoods">
       <div class="content">
         <img src="../assets/images/icon_product_add.png"/>
@@ -31,12 +31,12 @@
     align-items: center;
   }
   .content img{
-    margin-top: 5rem;
+    margin-top: 65%;
     width: 1.83rem;
     height: 1.79rem;
   }
   .content span{
-    margin-top: 0.47rem;
+    margin-top: 0.6rem;
     color: #757575;
     font-size: 0.48rem;
   }

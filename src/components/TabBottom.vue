@@ -1,5 +1,5 @@
 <template>
-  <div class="tab_bottom" v-show="hidShow">
+  <div class="tab_bottom" :class={tab_bottom_fixed:isHidden}>
     <div class="bottom_item">
       <router-link to="/main/home" replace>
         <img :src="current_name === 1 ? '../static/images/home_fill.png' : '../static/images/home.png'" />
@@ -22,13 +22,11 @@
 </template>
 <script>
     export default {
-        props:{
-          hidShow:{
-            default: ''
-          }
-        },
         data() {
             return {}
+        },
+        props:{
+          isHidden:{type:Boolean,default:false}
         },
         computed:{
           // 通过router 中设置name属性， 然后通过computed监听路由名的变化
@@ -49,7 +47,6 @@
 <style lang="scss" scoped>
   /**底部tab切换*/
   .tab_bottom{
-    position: fixed;
     left: 0;
     bottom: 0;
     width: 100%;
@@ -59,26 +56,30 @@
     display: flex;
     justify-content: space-between;
     box-shadow:0 0 70px #dcdcdc;
-    .bottom_item{
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      margin-left: 1rem;
-      margin-right: 1rem;
-    }
-    span{
-      padding-left: 0.12rem;
-      display: block;
-      color: #d5d8dd;
-      font-size: 0.36rem;
-    }
-    img{
-      width: 1rem;
-      height: 1rem;
-    }
-    .tab_txt_select{
-      color: #4cc3ad;
-    }
   }
+  .bottom_item{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  span{
+    padding-left: 0.12rem;
+    display: block;
+    color: #d5d8dd;
+    font-size: 0.36rem;
+  }
+  img{
+    width: 1rem;
+    height: 1rem;
+  }
+  .tab_txt_select{
+    color: #4cc3ad;
+  }
+  .tab_bottom_fixed{
+    position: fixed;
+  }
+
 </style>

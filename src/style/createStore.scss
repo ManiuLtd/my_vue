@@ -1,9 +1,8 @@
 @import "common";
 @import "public";
-
-.shop_create_content{
-  margin-top: 1.62rem;
-  background-color: #eee;
+.shop_create_content .content{
+  padding-top: 1.61rem;
+  background-color: #eeeeee;
 }
 /*  下拉小箭头  */
 .input_box .icon_arrow{
@@ -21,20 +20,17 @@
 .must_title{
   font-size: .36rem;
   color: #989898;
-  padding: .1rem .45rem 2rem;
+  padding: .1rem .45rem 0rem;
 }
 .must{
   margin-right: .2rem;
-  vertical-align: -webkit-baseline-middle;
+  vertical-align: middle;
 }
 /*  隐藏的信息盒子  */
 .input_content{
   margin-bottom: .2rem;
 }
 /*  配送费  */
-.input_fee{
-  height: 2.4rem;
-}
 .input_box .input_fee input{
   display: block;
   border: 1px dashed #999999;
@@ -42,6 +38,7 @@
   width: 87%;
   text-align: left;
   padding-left: .3rem;
+  margin-top: .7rem;
 }
 .input_box .input_fee input::-webkit-input-placeholder{
   text-align: left;
@@ -53,7 +50,35 @@
   color: #4cc3ad;
   padding-left: .3rem;
 }
-/*  减满活动 */
+/*  配送费新 */
+.input_fee{
+  height: 2.4rem;
+}
+.input_fee_title{
+  padding: .65rem .5rem 0 .5rem!important;
+  border: none!important;
+}
+.input_fee_title input{
+  width: 50%!important;
+}
+.input_box .input_fee_must{
+  visibility: hidden;
+}
+.input_box .input_fee input{
+  display: block;
+  border: 1px dashed #999999;
+  height: 1.1rem;
+  width: 87%;
+  text-align: left;
+  padding-left: .3rem;
+  margin-top: .7rem;
+}
+.input_box .input_fee_tip{
+  padding: .35rem .5rem;
+  font-size: .32rem;
+  color: #4cc3ad;
+}
+/*  满减活动 */
 .active{
   display: inline-block;
   position: absolute;
@@ -73,7 +98,6 @@
   display: flex;
   justify-content: space-between;
   background-color: white;
-  border-bottom: 1px solid #eeeeee;
   padding: 0.55rem 0.51rem;
   .label{
   }
@@ -96,6 +120,7 @@
       width: 1.88rem;
       height: 1.88rem;
       padding-right: 0.2rem;
+      margin-right:.3rem;
       .img_delete{
         position: absolute;
         right: 0rem;
@@ -104,9 +129,9 @@
         height: 0.52rem;
       }
       .img_select{
-        padding-right: 0.2rem;
         width: 1.88rem;
         height: 1.88rem;
+        border-radius: 8px;
       }
     }
 }

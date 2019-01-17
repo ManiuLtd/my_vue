@@ -1,6 +1,7 @@
 <template>
     <div class="verification_code_box">
-      <span class="verification_code" @click="getVerification" v-text="content"></span>
+      <span v-if="isClick" class="verification_code" @click="getVerification" v-text="content"></span>
+      <span v-if="!isClick" class="verification_code" style="color:#ccc;" v-text="content"></span>
     </div>
 </template>
 
@@ -11,7 +12,8 @@
   export default {
     data(){
       return{
-        content:'获取验证码'
+        content: '获取验证码',
+        isClick: true
       }
     },
     methods:{
@@ -20,10 +22,14 @@
       },
       startCountDown(){
         if(lastTime === 0){
+          this.isClick = true;
           lastTime = 60;
+          this.disabled = '';
           this.content = '重新获取';
         } else {
+          this.isClick = false;
           lastTime--;
+          this.disabled = ' disabled';
           this.content = lastTime + 's';
           setTimeout(()=>{
             this.startCountDown();

@@ -11,7 +11,7 @@
       <div class="product_info">
         <div class="introduction">
           <div class="title">
-            <span class="brand" v-text="goodsData.gb_name"> </span>
+            <span class="brand" v-if="goodsData.gb_name" v-text="goodsData.gb_name"> </span>
             <span class="goods_name" v-text="goodsData.g_name"></span>
           </div>
           <div class="goods_center">
@@ -27,7 +27,7 @@
             </div>
           </div>
           <div class="money" >
-            <span class="price" v-text="goodsData.show_price"></span>
+            <span class="price" v-text="'￥'+goodsData.show_price+' 起'"></span>
           </div>
           <div class="operate" v-show="inArray(goodsData.g_status,showEditStatus) || inArray(goodsData.g_status,showChangeStatus)">
             <span class="btn goods_edit" v-if="inArray(goodsData.g_status,showEditStatus)" @click="goodsEdit(goodsData.g_id)">编辑</span>
@@ -48,73 +48,48 @@
           </div>
         </div>
         <div class="goods_standard">
-          <div class="goods_content" v-for="(item,index) in goodSpecData">
+          <div class="goods_content" v-for="(item,index) in goodSpecData" @click="IsShowSpec(index+1)">
             <div class="standard_title">
               <img class="standard_title_left" src="../assets/images/icon_goods_title_left.png"/>
-              <span class="standard_txt">商品规格{{convert(index+1)}}</span>
+              <span class="standard_txt">商品规格{{index + 1}}</span>
             </div>
-            <transition name="fade">
-              <div class="standard_info" v-show="specShow">
-                <ul>
-                <li>规格类型：
-                  <span v-if="item.gn_spec_type==1">重量</span>
-                  <span v-if="item.gn_spec_type==2">容量</span>
-                </li>
-                <li>规格单位：<span v-text="item.old_gn_spec_num.substr((item.old_gn_spec_num.indexOf('/')+1))"></span></li>
-                <li>规格值：<span v-text="parseInt(item.gn_spec_num)"></span></li>
-                <li>单价(元)：<span v-text="item.gn_price"></span></li>
-                <li>剩余库存值(件)：<span v-text="item.gn_stock"></span></li>
-                <li>库存值提醒(件)：<span v-text="item.gn_stock_remind"></span></li>
+            <div class="standard_info">
+            <ul :class="{hidden_standard_info:specShow !== index+1}">
+                <li>规格类型：<span v-text="item.ps_name"></span></li>
+                <!--<li>规格单位：<span v-text="item.old_gn_spec_num.substr((item.old_gn_spec_num.indexOf('/')+1))"></span></li>-->
+                <li>规格值：<span v-text="item.pv_name"></span></li>
+                <li>单价(元)：<span v-text="item.ps_price"></span></li>
+                <li>剩余库存值(件)：<span v-text="item.ps_num"></span></li>
+                <!--<li>库存值提醒(件)：<span v-text="item.gn_stock_remind"></span></li>-->
               </ul>
-              </div>
-            </transition>
-            <div class="arrow" @click="IsShowSpec">
-              <img :class="{show_img:specShow}" src="../assets/images/icon_my_arrow.png"/>
+            </div>
+            <div class="arrow">
+              <img :class="{show_img:specShow===index+1}" src="../assets/images/icon_my_arrow.png"/>
             </div>
           </div>
-
         </div>
-        <div class="goods_property">
+        <div class="goods_property" v-if="attribute.length > 0">
           <div class="property_title">
             <img class="property_title_left" src="../assets/images/icon_goods_title_left.png" />
             <span class="property_txt">商品属性</span>
           </div>
           <div class="property_info">
             <ul>
-              <li v-for="v,k in attribute">{{v}} : {{attributeValue[k]}}</li>
+              <li v-for="(v,k) in attribute">{{v.pn_name}} : &nbsp;&nbsp;{{v.values}}</li>
             </ul>
           </div>
         </div>
-        <div class="review">
-          <div class="review_title">
-            <img class="review_title_title" src="../assets/images/icon_goods_title_left.png"/>
-            <span class="review_txt">审核信息</span>
-          </div>
-          <div class="review_info">
-            <ul>
-              <li>操作人:<span v-text="resultsData.check_name"></span></li>
-              <li>操作时间:<span v-text="resultsData.check_time"></span></li>
-            </ul>
-          </div>
-        </div>
-        <div class="remarks_box">
-          <div class="remarks">
-            <span class="remarks_tips">审核备注:</span>
-            <span class="remarks_info" v-text="resultsData.check_info"></span>
-          </div>
-      </div>
     </div>
    </div>
 </template>
 
 <script>
-
   import Vue from 'vue';
   import { Swipe, SwipeItem ,Lazyload} from 'vant';
   import Toast from '../widget/Toast';
   import * as API from '../service/API';
-  import Loading from '../widget/loading/loading'
-
+  import { Dialog } from 'vant'
+  import SuccessLoading from '../widget/sucess_loading/SuccessLoading'
 
   Vue.use(Swipe).use(SwipeItem).use(Lazyload);
 
@@ -137,7 +112,7 @@
             check_time:'', //审核时间
             check_info:'', //审核备注
           },
-          specShow:true,  // 商品规格显示或隐藏
+          specShow: 1  // 商品规格显示或隐藏
         }
       },
       methods:{
@@ -151,8 +126,6 @@
           return has;
         },
         getDoodsDetails(){
-          let loading = new Loading();
-          loading.show();
           let goodId = this.$route.params.id;
 //          /goods/goods_detail/{gId}.html
           let requestUrl = API.BASEURL + `/goods/goods_detail/${goodId}.html?g_id=${goodId}`;
@@ -172,19 +145,14 @@
               this.goodsCatName = response.gcInfos.firstInfo.gcName;
             }
 
-            this.attribute = response.gc_attribute;
-            this.attributeValue = response.g_attribute;
+            this.attribute = response.pro_data;
             this.topLevelData = response.gcInfos;
-            this.goodSpecData = response.goods_spec;
+            this.goodSpecData = response.sku_data;
             this.goodsImg = response.goods_image.d;
-            console.log(this.goodSpecData);
             if(response.results[0]){
               this.resultsData = response.results[0];
             }
             this.getGoodsImg();
-            loading.close();
-          }).then((error)=>{
-            loading.close();
           });
         },
         getGoodsImg(){
@@ -200,26 +168,28 @@
         },
         goodsEdit(id){
           this.$router.push({path: `/goodsEdit/${id}`});
+          this.$store.dispatch('setIsRefresh',true);
         },
         updataStatus(){
-          let loading = new Loading();
-          let data = {};
-          data.gId = this.goodsData.g_id;
-          loading.show();
-
-          this.$get(API.BASEURL+'/goods/update_status.html',{},data).then((response)=>{
-            if(response.code != 200){
-              new Toast(response.msg).show();
-              return;
-            }
-
-            this.goodsData.g_status = response.new_status
-            new Toast(response.msg).show();
-            console.log(this.goodsData.g_status);
-            loading.close();
-          }).then((error)=>{
-            loading.close();
+          let title = this.goodsData.g_status == 5 ? '确定下架吗？':'确定上架吗？';
+          Dialog.confirm({
+            title: title
+          }).then(() => {
+            let data = {};
+            data.gId = this.goodsData.g_id;
+            this.$get(API.BASEURL+'/goods/update_status.html',{},data).then((response)=>{
+              if(response.code != 200){
+                new Toast(response.msg).show();
+                return;
+              }
+              this.goodsData.g_status = response.new_status
+              new SuccessLoading(response.msg).show();
+              console.log(this.goodsData.g_status);
+            });
+          }).catch(() => {
+            // on cancel
           });
+
         },
         convert(str){
             var arr = ["1","2","3","4","5","6","7","8","9","10"];
@@ -231,8 +201,12 @@
             }
           return str;
         },
-        IsShowSpec(){
-          this.specShow = !this.specShow;
+        IsShowSpec(i){
+          if(this.specShow == i){
+            this.specShow = false;
+          }else {
+            this.specShow = i;
+          }
         }
       },
       mounted(){
@@ -265,10 +239,10 @@
       position: fixed;
       left: 0;
       top: 0;
-      z-index: 99999;
+      z-index: 599;
     }
     .product_info{
-      z-index: 100000;
+      z-index: 600;
       position: relative;
       top: 9rem;
       left: 0;
@@ -432,13 +406,20 @@
         }
         .standard_info {
           margin-top: 0.7rem;
-          margin-left: -2.5rem;
+          margin-left: -0.5rem;
+          max-width: 50%;
           ul{
+            height: auto;
+            transition: all .5s ease 0s;
            li {
               line-height: 0.68rem;
               color: #666666;
               font-size: 0.42rem;
             }
+          }
+          .hidden_standard_info{
+            height: 0!important;
+            overflow:hidden;
           }
         }
         .arrow{
@@ -447,9 +428,9 @@
           img{
             width: 0.2rem;
             height: 0.3rem;
+            transition: all .5s ease 0s;
           }
           .show_img{
-            transition: all .5s ease 0s;
             transform: rotate(90deg);
           }
         }
@@ -459,6 +440,7 @@
         display: flex;
         background-color: white;
         margin-top: 0.2rem;
+        margin-bottom: 2.3rem;
         .property_title{
           margin-top: 0.64rem;
           display: flex;
@@ -483,6 +465,10 @@
               line-height: 0.68rem;
               color: #666666;
               font-size: 0.42rem;
+              padding-bottom: .15rem;
+            }
+            li:last-child{
+              padding-bottom: 0;
             }
           }
         }
@@ -562,14 +548,5 @@
     color: #898989;
     margin-left: .3rem;
   }
-  }
-/* vue 动画属性*/
-  .fade-enter{       /*准备插入开始的状态，（从false准备到true的开始状态）*/  /*和离开结束的状态一致*/
-    opacity: 0;
-    transition: all .3s ease 0s;
-  }
-  .fade-leave-to{    /*离开结束的状态，彻底为false*/
-    opacity: 0;
-    transition: all .3s ease 0s;
   }
 </style>

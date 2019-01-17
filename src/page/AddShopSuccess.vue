@@ -1,6 +1,6 @@
 <template>
   <div>
-    <top-header title-txt="添加结果"></top-header>
+    <top-header title-txt="创建结果"></top-header>
     <div class="content">
       <div class="state">
         <img src="../assets/images/icon_add_success.png"/>

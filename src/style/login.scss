@@ -2,13 +2,13 @@
     padding: 0 1.1rem;
 }
 .title{
-    margin-top: 2.7rem;
+    padding-top: 2.7rem;
     font-size: .85rem;
-    color: rgba(26,27,57,1);
+    color: #1a1b39;
     font-family: sans-serif;
 }
 .title p:nth-child(1){
-  font-weight: 600;
+  font-weight: bold;
 }
 .title p:nth-child(2){
     font-size: .4rem;
@@ -23,6 +23,7 @@
   margin-top: 1.2rem;
 }
 .inpt input{
+    font-size: .48rem;
     width: 100%;
 }
 .login .pwd{

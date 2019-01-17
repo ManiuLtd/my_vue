@@ -1,11 +1,11 @@
 <template>
     <div>
-      <top-header title-txt="商户资料"></top-header>
+      <top-header title-txt="商户资料" frouter="/main"></top-header>
       <div class="top">
         <img class="logo" src="../../assets/images/store_logo.png"/>
         <div class="info">
           <span class="name" v-text="storeInfo.truename"></span>
-          <span class="review_time">审核通过时间：{{checkPassTime}}</span>
+          <span class="review_time">认证通过时间：{{checkPassTime}}</span>
         </div>
         <span class="type" v-if="storeType" v-text="storeType"></span>
       </div>
@@ -19,14 +19,6 @@
             </div>
         </div>
         </router-link>
-        <!--<router-link to="/productInfo">
-          <div class="items_info">
-            <img src="../../assets/images/icon_product_info.png" class="tips_icon"/>
-            <div class="tips_info_box">
-              <span class="tips_info">商品信息</span>
-            </div>
-          </div>
-        </router-link>-->
         <router-link to="/contactList">
           <div class="items_info">
             <img src="../../assets/images/icon_contact_info.png" class="tips_icon"/>
@@ -59,14 +51,6 @@
             </div>
           </div>
         </router-link>
-        <!--<router-link to="/acceptInfo">-->
-          <!--<div class="items_info">-->
-            <!--<img src="../../assets/images/icon_accept_info.png" class="tips_icon"/>-->
-            <!--<div class="tips_info_box">-->
-              <!--<span class="tips_info">受理信息</span>-->
-            <!--</div>-->
-          <!--</div>-->
-        <!--</router-link>-->
         <router-link to="/uploadData">
           <div class="items_info">
             <img src="../../assets/images/icon_upload_ data.png" class="tips_icon"/>
@@ -80,9 +64,7 @@
 </template>
 
 <script>
-
   import * as API from '../../service/API';
-  import Loading from '../../widget/loading/loading'
   import TopHeader from '../../components/TopHeader'
 
     export default {
@@ -104,7 +86,6 @@
     },
     methods:{
       getStoreInfo(){
-        let loading = new Loading();
         this.$get(API.PARTNER_INFO).then((response)=>{
           if(response.code != 200){
             new Toast(response.msg).show();
@@ -122,13 +103,10 @@
           }else{
             this.storeType = false;
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
       }
     },
-    mounted(){
+    activated(){
       this.getStoreInfo()
     },
     components: {TopHeader}
@@ -137,7 +115,7 @@
 
 <style lang="scss" scoped>
   .top{
-    margin-top: 2rem;
+    padding-top: 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;

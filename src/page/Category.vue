@@ -1,7 +1,7 @@
 <template>
   <div class="content">
     <top-header title-txt="选择分类" father-right="保存" @callBackRightClick="submit"></top-header>
-    <div class="box">
+    <div class="CategoryBox">
       <div class="left">
         <p v-for="(classA,index) in arrA" v-text="classA.gc_name" @click="getArrB(classA,index)" :class="{selected : index == arrAselect}"></p>
       </div>
@@ -19,7 +19,6 @@
   import * as API from '../service/API';
   import TopHeader from '../components/TopHeader.vue'
   import eventBus from  '../utils/eventBus'
-  import Loading from '../widget/loading/loading'
 
   export default {
     data() {
@@ -39,53 +38,47 @@
         this.$router.go(-1);
       },
       getArrA(){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.CATE_OPTIONS).then((res)=>{
           this.arrA = res.options;
           if(this.arrA){
             this.getArrB(this.arrA[0],0);
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
       },
       getArrB(category,position){
-        let loading = new Loading();
-        loading.show();
         this.arrC = [];
         this.$get(API.CATE_OPTIONS,{'cate_id':category.gc_id}).then((res)=>{
           this.arrB = res.options;
           if(this.arrB&&this.arrB.length>0){
             this.getArrC(this.arrB[0],0);
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
         // 注意： 请求B的时候， 保存A的点击位置
         this.arrAselect = position;
         this.category.firLevelId = this.arrA[position].gc_id;
         this.category.firLevelName = this.arrA[position].gc_name;
 
+        this.category.secLevelId = '';
+        this.category.secLevelName = '';
+
+        this.category.thiLevelId = '';
+        this.category.thiLevelName = '';
+
       },
       getArrC(category,position){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.CATE_OPTIONS,{'cate_id':category.gc_id}).then((res)=>{
           this.arrC = res.options;
           if(this.arrC&&this.arrC.length>0){
             this.setClickPosition(this.arrC[0],0)
           }
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
         // 注意： 请求C的时候， 保存B的点击位置
         this.arrBselect = position;
         this.category.secLevelId = this.arrB[position].gc_id;
         this.category.secLevelName = this.arrB[position].gc_name;
+
+        this.category.thiLevelId = '';
+        this.category.thiLevelName = '';
       },
       setClickPosition(category,position){
         // 点击C的时候，保存C的点击位置
@@ -96,8 +89,8 @@
     },
     mounted () {
       let screenHeigt = window.screen.availHeight;
-      document.getElementsByClassName('box')[0].style.height=screenHeigt+'px';
-      document.getElementsByClassName('box')[0].style.height=screenHeigt+'px';
+      document.getElementsByClassName('CategoryBox')[0].style.height=screenHeigt+'px';
+      document.getElementsByClassName('CategoryBox')[0].style.height=screenHeigt+'px';
       this.getArrA();
     },
     components:{TopHeader}
@@ -107,41 +100,41 @@
 <style lang="scss" scoped>
   @import "../style/common.scss";
   @import "../style/public.scss";
-  .box{
+  .CategoryBox{
     width: 100%;
     height: 100%;
     overflow: hidden;
     padding-top: 1.61rem;
     box-sizing: border-box;
   }
-  .box div{
+  .CategoryBox div{
     box-sizing: border-box;
     width: 33%;
     height: 100%;
     float: left;
     overflow-x: auto;
   }
-  .box .left{
+  .CategoryBox .left{
     text-align: left;
     background-color: #EEEEEE;
   }
-  .box .left p{
+  .CategoryBox .left p{
     padding-left: .2rem;
   }
-  .box .right{
+  .CategoryBox .right{
     padding-right: .2rem;
     text-align: right;
   }
-  .box .right p{
+  .CategoryBox .right p{
     justify-content: flex-end;
   }
-  .box .center{
+  .CategoryBox .center{
     width: 34%;
   }
-  .box .center p{
+  .CategoryBox .center p{
     justify-content: center;
   }
-  .box div p{
+  .CategoryBox div p{
     width: 100%;
     height: 1.2rem;
     font-size: .4rem;
@@ -150,11 +143,11 @@
     align-items: center;
   }
   /*   被选中的样式  */
-  .selected{
+  .CategoryBox .selected{
     background-color: #DDEAE7;
     color: #4cc3ad;
   }
-  .box div .selectedBC{
+  .CategoryBox div .selectedBC{
     color: #4cc3ad;
   }
 </style>

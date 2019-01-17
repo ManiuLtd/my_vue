@@ -11,7 +11,6 @@
 <script>
   import TopHeader from '../../components/TopHeader'
   import * as API from '../../service/API';
-  import Loading from '../../widget/loading/loading'
 
   export default {
     data() {
@@ -25,17 +24,12 @@
     components:{TopHeader},
     methods:{
       getProductData(){
-        let loading = new Loading();
-        loading.show();
         this.$get(API.CATE_OPTIONS).then((res)=>{
           if(res.code != 200){
             new Toast(response.msg).show();
             return;
           }
           this.productData = res.options;
-          loading.close();
-        }).then((error)=>{
-          loading.close();
         });
       }
     },

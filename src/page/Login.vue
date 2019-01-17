@@ -11,7 +11,7 @@
       <div class="inpt pwd">
         <password-text input-hint="请输入密码" class="input_password" v-on:sendInputContent="getPassWord"></password-text>
       </div>
-      <router-link to="/forgetPwd">
+      <router-link to="/forgetPwd?isLogin=0">
         <p class="text_right">忘记密码？</p>
       </router-link>
     </div>
@@ -19,7 +19,7 @@
       <img src="../assets/images/register_success.png" />
       <span v-on:click="login()">登录</span>
     </div>
-    <router-link to="/register">
+    <router-link to="/register" replace>
       <span class="register">注册</span>
     </router-link>
   </div>
@@ -27,12 +27,11 @@
 
 <script>
   import * as API from '../service/API';
-  import LocalStorageUtils from '../utils/LocalStorageUtils';
+  import * as constant from '../utils/constant';
   import Toast from '../widget/Toast';
   import EditText from '../components/common/EditText'
   import PasswordText from '../components/common/PasswordText'
-  import Loading from '../widget/loading/loading'
-  import eventBus from  '../utils/eventBus'
+  import { loginRedirect } from '../utils/RouterControl';
 
   export default {
     data(){
@@ -40,6 +39,15 @@
         username:'',
         password:'',
       }
+    },
+    beforeRouteLeave(to,from,next){
+      if(to.path == '/register'){
+        this.$store.dispatch('setIsRefresh',true);
+      }
+      next();
+    },
+    mounted(){
+      loginRedirect(this);
     },
     methods:{
       getUsername(value){
@@ -57,58 +65,37 @@
           new Toast("请输入密码").show();
           return;
         }
-        let loading = new Loading('正在登录 ...');
-        loading.show();
+        if(!constant.REGULAR_PHONE.test(this.username)){
+          new Toast("手机号格式有误").show();
+          return;
+        }
         let data = {};
         data._username = this.username;
         data._password = this.password;
         this.$post(API.LOGIN,data).then((response)=>{
-          if(response.code == 500){
+          if(response.code != 200){
             new Toast(response.error).show();
             return;
           }
-          loading.close();
           this.loginSuccess(response);
-        }).then((error)=>{loading.close();})
+        })
       },
       loginSuccess(data){
-        let cur_user = data.cur_user;
-        let userInfo = data.userInfo;
-        let fileHost = data.fileHost;
-        let is_ident = data.is_ident; // 是否认证  无认证跳到认证页面
-        if(true == is_ident){
-          let partner = data.partner;
-          if(partner){
-            //审核状态【1.未申请 2.待审核 3.打回 4.拒绝 5.通过】，审核通过后启用
-            let partnerStatus = partner.partnerStatus;
-            if(5 == partnerStatus){
-              let partnerName = partner.partnerName;
-              if(partnerName){
-                let localStorageUtils = new LocalStorageUtils();
-                localStorageUtils.setStore('cur_user',cur_user);
-                localStorageUtils.setStore('userInfo',userInfo);
-                localStorageUtils.setStore('fileHost',fileHost);
-                this.$router.replace('/main');
-              }else {
-                this.$router.replace('./reviewSuccess');
-              }
-            }else if(2 == partnerStatus){
-              this.$router.replace('./reviewProcessing');
-            }else if(3 == partnerStatus ){
-              this.$router.replace('./reviewFailure');
-            }else if(4 == partnerStatus){
-              this.$router.replace('./reviewRefuse');
-            }
-          }else{
-            this.$router.replace('./reviewSuccess');
-          }
-        }else {
-          this.$router.replace('/loginSuccess');
+        if(data){
+          let userInfo = { aName:data.cur_user.aName }
+          this.$store.dispatch('setUserInfo',userInfo);
+          loginRedirect(this);
+          this.loginSuccessAndroid(data.cur_user.aName);
+        }
+      },
+
+      loginSuccessAndroid(phoneNum){
+        try {  //非 app 登录，无该方法，捕获异常，不要弹错误
+          window.erock.erock_loginSuccess(phoneNum);
+        }catch (e) {
+          console.log('非app内登录，无法调取app方法')
         }
       }
-    },
-    destroyed(){
-      eventBus.$emit('info',{name: this.username});
     },
     components:{
       EditText,PasswordText
